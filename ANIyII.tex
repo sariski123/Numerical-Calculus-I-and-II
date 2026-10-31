@@ -1,0 +1,197 @@
+\documentclass[12pt,twoside]{report}
+\newcommand\hmmax{0}
+\newcommand\bmmax{0}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc} %%esto es para las tildes en linux
+\usepackage{lipsum}
+% \usepackage{mathptmx} si se pone no funciona el \mathcal por alguna razón (?
+\usepackage[paper=a4paper, margin=2.5 cm, top=2.5 cm, bottom=2.5cm]{geometry}
+\usepackage{comment}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\DeclareMathAlphabet{\mathbbm}{U}{bbm}{m}{n}
+\usepackage{marvosym}
+\usepackage{comment}
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+\usepackage{graphicx}
+\usepackage[all]{xy}
+\usepackage{ mathrsfs }
+\usepackage{nicematrix,tikz}
+\usepackage{cancel}
+\usepackage{relsize}
+\usepackage{amsfonts}
+\usepackage{scrextend}
+\usepackage{pgfplots}
+\usepgfplotslibrary{fillbetween}
+\usepackage{hyperref}
+\usepackage{tcolorbox}
+\usepackage{ wasysym }
+\usepackage{wrapfig}
+\usepackage[new]{old-arrows}
+\usepackage{makeidx}
+\usepackage{comment}
+\usepackage{arydshln}
+\usepackage{units}
+\usepackage[new]{old-arrows}
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathmorphing}
+\usepackage{lmodern}
+\usepackage{graphicx} % provides "\rotatebox" and "\reflectbox" macros
+\usepackage{mathtools}
+\usepackage[document]{ragged2e}
+\usepackage{ulem}
+\usepackage{etoolbox}
+\usepackage[shortlabels]{enumitem}
+\usepackage{MnSymbol} %\upmapsto \downmapsto
+\usepackage{multicol}
+\usepackage{tikz-cd}
+\usepackage{pgfplots}
+\usepgfplotslibrary{fillbetween}
+\setlist[enumerate]{nosep}
+\makeatletter
+\providecommand{\subtitle}[1]{% para poner un \subtitle
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\newlength{\LETTERheight}
+\AtBeginDocument{\settoheight{\LETTERheight}{I}}
+\newcommand\rotPi{\rotatebox[origin=c]{180}{$\Pi$}}
+\newcommand\longmapsfrom{\rotatebox[origin=c]{180}{$\longmapsto$}}
+\newcommand*{\pd}[3][]{\ensuremath{\frac{\partial^{#1} #2}{\partial #3}}}
+%%para poner \dfrac{\partial^z x}{\partial y} como \pd[z]{x}{y} 
+\newcommand*{\pdd}[3][]{\ensuremath{\dfrac{\partial^{#1} #2}{\partial #3}}}
+%%para poner \dfrac{\partial^z x}{\partial y} como \pd[z]{x}{y} 
+
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE,RO]{\bfseries \thepage}
+\fancyhead[RE,LO]{\itshape \leftmark}
+\titleformat{\chapter}[hang]{\bfseries\Large}{Capítulo \thechapter. }{6pt}{}
+\titlespacing*{\chapter}{0pt}{0pt}{20pt}
+\titleformat{\section}[hang]{\bfseries\large}{\thesection.}{4pt}{}
+\titlespacing*{\section}{0pt}{20pt}{10pt}
+\titleformat{\subsection}[hang]{\bfseries\normalsize}{\thesubsection.}{6pt}{}
+\titleformat{\subsubsection}[hang]{\itshape\normalsize}{\thesubsubsection.}{6pt}{}
+\linespread{1.5}
+\parskip=10pt
+    
+\newcommand*{\bint}{\mathlarger{\int}} 
+\newcommand*{\bbint}{\mathlarger{\mathlarger{\int}}}    
+\newcommand\isom{\xrightarrow{
+   \,\smash{\raisebox{-0.65ex}{\ensuremath{\scriptstyle\sim}}}\,}}
+\newcommand{\modulo}[2]{{\raisebox{.2em}{$#1$}\left/\raisebox{-.2em}{$#2$}\right.}}
+\newcommand{\rad}{\text{Rad}\,}
+\newcommand\mc[1]{\mathcal{#1}}
+
+\newtheoremstyle{plain}
+{0pt} % Space above
+{10pt} % Space below
+{} % Body font
+{} % Indent amount
+{\itshape} % Theorem head font
+{.} % Punctuation after theorem head
+{.5em} % Space after theorem head
+{} % Theorem head spec (can be left empty, meaning `normal')
+
+\newtheoremstyle{azul}
+{0pt} % Space above
+{10pt} % Space below
+{} % Body font
+{} % Indent amount
+{\bfseries \color{blue}} % Theorem head font
+{.} % Punctuation after theorem head
+{.5em} % Space after theorem head
+{} % Theorem head spec (can be left empty, meaning `normal')
+
+\newtheoremstyle{azul2}
+{0pt} % Space above
+{10pt} % Space below
+{} % Body font
+{} % Indent amount
+{\itshape \color{blue}} % Theorem head font
+{.} % Punctuation after theorem head
+{.5em} % Space after theorem head
+{} % Theorem head spec (can be left empty, meaning `normal')
+
+
+\theoremstyle{azul}
+  \newtheorem*{propx}{Proposición}
+  \newtheorem*{demx}{Demostración}
+  \newtheorem*{defix}{Definición}
+  \newtheorem*{propix}{Propiedades}
+  \newtheorem*{corx}{Corolario}
+  \newtheorem*{notax}{Nota}
+  \newtheorem*{ejex}{Ejemplos}
+
+\theoremstyle{azul2}
+  \newtheorem*{obsx}{Observación}
+
+  
+\theoremstyle{definition}
+  \newtheorem{eje}{Ejemplo}
+  \newtheorem*{ejes}{Ejemplos}
+  \newtheorem*{clasi}{Clasificación}
+  \newtheorem{defi}{Definición}
+  \newtheorem*{defin}{Definición}
+  \newtheorem*{propi}{Propiedades}
+  \newtheorem*{intgraf}{Interpretación gráfica}
+  \newtheorem{demos1}{Demostración}
+  \newtheorem*{teo}{Teorema}
+  \newtheorem*{cor}{Corolario}
+  \newtheorem*{coro}{Corolario}  
+  \newtheorem*{ejers}{Ejercicios}
+  \newtheorem*{ejer}{Ejercicio}
+  \newtheorem*{ejem}{Ejemplo}
+  \newtheorem*{ejems}{Ejemplos}
+  \newtheorem*{ejern}{Ejercicio}
+  \newtheorem*{met}{Método}
+  \newtheorem{pro}{Proposición}
+  \newtheorem*{prop}{Proposición}
+  \newtheorem{prop1}{Proposición}
+  \newtheorem*{lem}{Lema}
+
+\theoremstyle{plain}
+  \newtheorem*{obs}{Observación}
+  \newtheorem*{sol}{Solución}
+  \newtheorem*{pag}{Página}  
+  \newtheorem*{dem}{Demostración}
+  \newtheorem*{nota}{Nota}
+
+\usepackage{afterpage}
+
+\newcommand\blankpage{%
+    \null
+    \thispagestyle{empty}%
+    \addtocounter{page}{-1}%
+    \newpage}
+  
+  
+\title{\textit{\textbf{Análisis Numérico I y II}}}
+\author{Sara Santos García \;\;\; Pablo Zurrón García}
+\subtitle{2º Matemáticas, Universidad de Salamanca}
+%\hypersetup{draft}
+\begin{document}
+\maketitle
+\afterpage{\blankpage}
+\afterpage{\blankpage}
+\tableofcontents
+\vfill
+\newpage
+\addcontentsline{toc}{chapter}{\textbf{ANÁLISIS NUMÉRICO I}} 
+\input{Capitulo 1.tex}
+\input{Capitulo 2.tex} 
+\newpage
+\addcontentsline{toc}{chapter}{\textbf{ANÁLISIS NUMÉRICO II}}
+\input{Capitulo 3.tex}
+\input{Capitulo 4.tex}
+\input{Capitulo 5.tex}
+\addcontentsline{toc}{chapter}{\textbf{FORMULARIO}}
+\input{Formulario}
+\input{Mathematica}
+
+\end{document}
+

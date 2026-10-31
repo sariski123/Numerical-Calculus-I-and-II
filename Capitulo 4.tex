@@ -1,0 +1,504 @@
+    
+       \chapter{Derivaci{\'o}n num{\'e}rica} 
+        \section{Introducción}
+        La derivación numérica es un método para aproximar la derivada de una función $f$ en un punto $x_o$ por una combinación lineal de valores de $f$ en ciertos nodos $x_i$ (en nuestro caso serán equidistantes) próximos a $x_o$:
+        $$f'(x_o)\approx\sum_{i=0}^n c_i\cdot f(x_i)$$
+        Existen dos forma de calcular los coeficientes $c_i$, o bien calculando la derivada del polinomio de interpolación de $f$ en los $x_i$ o bien imponiendo $n+1$ condiciones a dichos coeficientes (típicamente, se impone que la aproximación sea exacta para polinomios de grado menor o igual que $n$).
+        
+        Además, deduciremos técnicas generales para deducir el error de fórmulas numéricas (núcleos de Peano) y para mejorar el orden de convergencia de este error (extrapolación de Richardson).
+            \section{Derivaci{\'o}n del polinomio de interpolaci{\'o}n}
+            \begin{prop}
+            Sean $\{x_o,\ldots,x_n\}$ un conjunto de nodos equiespaciados, $f$ una función y $p_n(x)$ el polinomio de interpolación de $f$ en los $x_i$. El error cometido al aproximar la derivada de $f'(x_k)$ con  $0\leq k\leq n$ por $p_n'(x_k)$ es
+            \begin{align}
+            \mathcal{E}'_n(x_k)=\dfrac{f^{(n+1)}(\xi)}{(n+1)!}\cdot (-1)^{n-k}\cdot h^n\cdot k!\cdot (n-k)!= \dfrac{f^{(n+1)}(\xi)}{n+1} \cdot \dfrac{(-1)^{n-k}\cdot h^n}{\binom{n}{k}}
+            \label{error:derivada}
+            \end{align}
+            con $\xi\in (x_o,x_n)$.
+           \end{prop}
+           \begin{dem}
+            Derivando la ecuación \ref{error:int} se tiene que
+            $$\mathcal{E}_n'(x_k)=\dfrac{f^{(n+1)}(\xi)}{(n+1)!}\cdot \dfrac{d}{dx}\left(\prod_{i=0}^n(x-x_i)\right)_{x=x_k}$$
+            Tomando $\Omega_k(x)=\prod_{i\neq k}(x-x_i)$ obtenemos lo siguiente
+            $$\mathcal{E}_n'(x_k)=\dfrac{f^{(n+1)}(\xi)}{(n+1)!}\cdot(\Omega_k(x_k)+\cancel{(x_k-x_k)}\cdot \Omega_k'(x_k))=\dfrac{f^{(n+1)}(\xi)}{(n+1)!}\cdot \prod_{i\neq k}(x_k-x_i)$$
+            $$=\dfrac{f^{(n+1)}(\xi)}{(n+1)!}\cdot \prod_{i\neq k}(x_o+kh-x_o-ih)=\dfrac{f^{(n+1)}(\xi)}{(n+1)!}\cdot h^n \prod_{i\neq k}(k-i)$$
+            $$=\dfrac{f^{(n+1)}(\xi)}{(n+1)!}\cdot h^n\cdot  k\cdot (k-1)\cdots (k-(k-1))\cdot (k-(k+1))\cdot (k-(k+2))\cdots(k-n)=$$
+            $$=\dfrac{f^{(n+1)}(\xi)}{(n+1)!}\cdot (-1)^{n-k}\cdot h^n\cdot k!\cdot (n-k)! = \dfrac{f^{(n+1)}(\xi)}{n+1} \cdot \dfrac{(-1)^{n-k}\cdot h^n}{\binom{n}{k}}$$
+            
+           \qed\end{dem}
+             \begin{prop}
+            Con las notaciones precedentes, se tiene que
+            \begin{align}
+           p_n'(x_o)=\sum_{k=1}^n\dfrac{(-1)^{k-1}\Delta^k f(x_o)}{h\cdot k}
+           \label{derivada:prog}
+            \end{align}
+            \end{prop}
+            \begin{dem}
+            Por \ref{newton-gregoryprog} sabemos que
+            $$p_n(x)=\sum_{k=0}^n\binom{s}{k}\Delta^k f(x_o)$$
+            con $s=\dfrac{x-x_o}{h}$. Derivando esta expresión y evaluando en $x=x_o$ ($s=0$) se tiene que
+            $$p_n'(x_o)=\sum_{k=1}^n\Delta^kf(x_o) \cdot \left(\dfrac{d}{dx}\binom{s}{k}\right)_{x=x_o}=\sum_{k=1}^n\Delta^kf(x_o) \cdot \dfrac{ds}{dx} \cdot\left(\dfrac{d}{ds}\binom{s}{k}\right)_{s=0}=$$
+            $$=\sum_{k=1}^n\dfrac{\Delta^kf(x_o)}{h\cdot k!} \cdot \left(\dfrac{d}{ds}(s\cdot (s-1)\cdots (s-k+1))\right)_{s=0}$$
+             Si evaluamos la derivada anterior en $s=0$ obtendremos el coeficiente de primer grado del polinomio (por ser el término independiente de la derivada de dicho polinomio), con lo cual:
+            $$p_n'(x_o)=\sum_{k=1}^n\dfrac{\Delta^kf(x_o)}{h\cdot k!} \cdot (-1)\cdots (-k+1)=\sum_{k=1}^n\dfrac{(-1)^{k-1}\Delta^kf(x_o)}{h\cdot k!} \cdot (k-1)!=\sum_{k=1}^n\dfrac{(-1)^{k-1}\Delta^k f(x_o)}{h\cdot k}$$
+            \qed\end{dem}
+            \begin{prop}
+            Con las notaciones precedentes, se tiene que
+            \begin{align}
+            p_n'(x_n)=\sum_{k=1}^n\dfrac{\nabla^k f(x_n)}{h\cdot k}
+            \label{derivada:reg}
+            \end{align}
+            \end{prop}
+            \begin{dem}
+            Por \ref{newton-gregoryreg} sabemos que
+            $$p_n(x)=\sum_{k=0}^n\binom{u+k-1}{k}\Delta^k f(x_n)$$
+            con $u=\dfrac{x-x_n}{h}$. Derivando esta expresión y evaluando en $x=x_n$ ($u=0$) se tiene que
+            $$p_n'(x_n)=\sum_{k=1}^n \nabla^kf(x_n)\cdot \left(\dfrac{d}{dx}\binom{u+k-1}{k}\right)_{x=x_n}=\sum_{k=1}^n \dfrac{\nabla^kf(x_n)}{h\cdot k!}\cdot \left(\dfrac{d}{du}(u\cdot (u+1)\cdots(u+(k-1))\right)_{u=0}$$
+            Por el mismo razonamiento que antes, al evaluar la derivada en $u=0$ el resultado será el coeficiente de grado 1, con lo cual:
+            $$p_n'(x_n)=\sum_{k=1}^n \dfrac{\nabla^kf(x_n)}{h\cdot k!}\cdot (k-1)!=\sum_{k=1}^n\dfrac{\nabla^k f(x_n)}{h\cdot k}$$
+            \qed\end{dem}
+            \begin{obs}
+            Siguiendo un razonamiento similar al de las anteriores demostraciones, se puede deducir una fórmula para calcular la derivada del polinomio de interpolación en un nodo cualquiera $x_j$:
+            \begin{align}
+            p_n'(x_j)=\sum_{k=1}^n\dfrac{\Delta^k f(x_o)}{h\cdot k!}\cdot \left(\dfrac{d}{ds}((s(s-1)\cdots(s-i+1))\right)_{s=j}                     \label{derivada:cent}    
+            \end{align}
+            \end{obs}
+            
+            \begin{ejes}(\textbf{Fórmulas de dos puntos})
+            Tomando $n=1$ en (\ref{derivada:prog}) obtenemos la fórmula progresiva:
+            \begin{align}                      
+            f'(x_o)\approx p'_1(x_o)=\frac{\Delta f(x_o)}{h}=\dfrac{f(x_o+h)-f(x_o)}{h}
+            \label{prog:2}
+             \end{align}
+            Y tomando $n=1$ en (\ref{derivada:reg}) obtenemos la fórmula regresiva:
+            \begin{align}
+            f'(x_1)\approx p'_1(x_1)=\frac{\nabla f(x_1)}{h}=\dfrac{f(x_1)-f(x_1-h)}{h}
+            \label{reg:2}
+            \end{align}
+            El error cometido será
+            $$\mathcal{E}_1'(x_o)=-\dfrac{f''(\xi)}{2}\cdot h$$
+            $$\mathcal{E}_1'(x_1)=\dfrac{f''(\xi)}{2}\cdot h$$
+            \end{ejes}
+            \begin{ejes}
+            (\textbf{Fórmulas de tres puntos})
+            Tomando $n=2$ en (\ref{derivada:prog}) obtenemos la fórmula progresiva
+            $$p_2'(x_o)=\frac{1}{h}\left(\Delta f(x_o)-\frac{\Delta^2f(x_o)}{2}\right)=\frac{2f(x_1)-2f(x_o)-\Delta f(x_1)+\Delta f(x_o)}{2h}=$$
+            $$=\frac{2f(x_1)-2f(x_o)-f(x_2)+f(x_1)+f(x_1)- f(x_o)}{2h}=\frac{-3f(x_o)+4f(x_o+h)-f(x_o+2h)}{2h}$$
+            \begin{align}
+            f'(x_o)\approx\frac{-3f(x_o)+4f(x_o+h)-f(x_o+2h)}{2h}
+            \label{prog:3}
+            \end{align}
+            Y tomando $n=2$ en (\ref{derivada:reg}) obtenemos la fórmula regresiva
+            $$p_2'(x_2)=\frac{1}{h}\left(\nabla f(x_2)+\frac{\nabla^2f(x_2)}{2}\right)=\frac{2f(x_2)-2f(x_1)+\nabla f(x_2)-\nabla f(x_1)}{2h}=$$
+            $$=\frac{2f(x_2)-2f(x_1)+f(x_2)-f(x_1)-f(x_1)+f(x_o)}{2h}=\frac{3f(x_2)-4f(x_2-h)+f(x_2-2h)}{2h}$$
+            \begin{align}
+            f'(x_2)\approx \frac{3f(x_2)-4f(x_2-h)+f(x_2-2h)}{2h}
+            \label{reg:3}
+            \end{align}
+            Además, tomando $n=2$ y $j=1$ en (\ref{derivada:cent}) podemos deducir la fórmula centrada
+            $$p_2'(x_1)=\frac{1}{h}\left(\Delta f(x_o)\cdot\left(\dfrac{d}{ds} (s)\right)_{s=1}+\dfrac{\Delta^2f(x_o)}{2}\cdot\left(\dfrac{d}{ds}( s(s-1))\right)_{s=1}\right)=$$
+            $$=\dfrac{1}{h}\Delta f(x_o)+\dfrac{1}{2h}\Delta^2f(x_o)=\dfrac{2f(x_1)-2f(x_o)+f(x_2)-2f(x_1)+f(x_o)}{2h}=$$
+            $$=\dfrac{f(x_1+h)-f(x_1-h)}{2h}$$
+            \begin{align}
+            f'(x_1)\approx \dfrac{f(x_1+h)-f(x_1-h)}{2h}
+            \label{cent:3}
+            \end{align}
+            Esta fórmula se puede obtener también como el promedio de la fórmula regresiva y de la regresiva. Veamos ahora el error de cada fórmula:
+            $$\mathcal{E}_2'(x_o)=\mathcal{E}_2'(x_2)=\dfrac{f^{(3)}(\xi)}{3}\cdot h^2$$
+            $$\mathcal{E}_2'(x_1)=-\dfrac{f^{(3)}(\xi)}{6}\cdot h^2$$            
+            \end{ejes}
+            \begin{ejes}
+            (\textbf{Fórmulas de cinco puntos}) Denotaremos por $f_i$ a $f(x_i)$. 
+            Tomando $n=4$ en (\ref{derivada:prog}) obtenemos la fórmula progresiva
+            $$ p_4'(x_o)=\dfrac{1}{h}\left(\Delta f(x_o) -\dfrac{\Delta^2f(x_o)}{2}+ \dfrac{\Delta^3f(x_o)}{3}-\dfrac{\Delta^4f(x_o)}{4}\right)=$$
+            $$=\dfrac{12(f_1-f_o)-6(f_o-2f_1+f_2)+4(-f_o+3f_1-3f_2+f_3)-3(f_o-4f_1+6f_2-4f_3+f_4)}{12h}=$$           $$=\dfrac{-25f(x_o)+48f(x_o+h)-36f(x_o+2h)+16f(x_o+3h)-3f(x_o+4h)}{12h}$$
+            \begin{align}
+            f'(x_o)\approx \dfrac{-25f(x_o)+48f(x_o+h)-36f(x_o+2h)+16f(x_o+3h)-3f(x_o+4h)}{12h}
+            \label{prog:5}
+            \end{align}
+            Se puede deducir la fórmula regresiva de forma similiar
+            \begin{align}
+            f'(x_4)\approx p_4'(x_4)=\dfrac{3f(x_4-4h)-16f(x_4-3h)+36f(x_4-2h)-48f(x_4-h)+25f(x_4)}{12h}
+            \label{reg:5}
+            \end{align}           
+            La fórmula centrada será
+            \begin{align}
+            f'(x_2)\approx p'_4(x_2)=\dfrac{f(x_2-2h)-8f(x_2-h)+8f(x_2+h)-f(x_2+2h)}{12h} 
+            \label{cent:5}
+            \end{align}
+            Utilizando (\ref{error:derivada}) podemos calcular el error de cada una de estas fórmulas:
+            $$\mathcal{E}'_4(x_o)=\mathcal{E}'_4(x_4)=\dfrac{f^{(5)}(\xi)}{30}\cdot h^4$$
+            $$\mathcal{E}'_4(x_2)=\dfrac{f^{(5)}(\xi)}{120}\cdot h^4$$
+
+            \end{ejes}
+            
+            \section{Método de los coeficientes indeterminados}
+            \begin{prop}
+            Sean $\{x_o,\ldots,x_n\}$ un conjunto de nodos equiespaciados y $f$ una función de variable real. Fijando cierto nodo $x_j$, una fórmula (exacta para polinomios de grado menor o igual que $n$) para aproximar $f'(x_j)$ es
+            $$f'(x_j)\approx\sum_{i=0}^n c_i\cdot f(x_i)$$
+            donde los $c_i$ satisfacen la siguiente ecuación matricial
+            $$\begin{pmatrix}
+            1 & 1 &\cdots& 1\\
+            (-j) & (1-j)&\cdots &(n-j)\\
+            (-j)^2 & (1-j)^{2}&\cdots &(n-j)^2\\
+            \vdots&\vdots&\ddots&\vdots\\
+            (-j)^n &(1-j)^n&\cdots &(n-j)^n 
+            \end{pmatrix} \cdot 
+            \begin{pmatrix}
+            c_0\\
+            c_1\\
+            c_2\\
+            \vdots\\
+            c_n
+            \end{pmatrix}
+            =\begin{pmatrix}
+            0\\
+            \frac{1}{h}\\
+            0\\
+            \vdots\\
+            0
+            \end{pmatrix}
+            $$
+            \end{prop}
+            \begin{dem}
+            La condición de que la fórmula sea exacta para polinomios de grado menor o igual que $n$ impone $n+1$ condiciones en los coficientes $c_i$, esto es, si suponemos que la fórmula es exacta para la base de polinomios $\{1,(x-x_j),\ldots,(x-x_j)^n\}$ obtendremos un sistema de $n+1$ ecuaciones con $n+1$ incógnitas $c_i$:
+            $$\begin{array}{l}
+               f(x)=1    \\
+            f(x)=x-x_j\\
+            f(x)=(x-x_j)^2\\
+            \vdots \\
+            f(x)=(x-x_j)^n
+            \end{array}
+            \quad
+            \left\{\begin{array}{l}
+                0=c_o+c_1+\ldots+c_n   \\
+                1=c_o\cdot(x_o-x_j)+c_1\cdot(x_1-x_j)+\ldots+c_n\cdot(x_n-x_j)\\
+                0=c_o\cdot(x_o-x_j)^2+c_1\cdot(x_1-x_j)^2+\ldots+c_n\cdot(x_n-x_j)^2\\
+                \vdots\\
+                0=c_o\cdot(x_o-x_j)^n+c_1\cdot(x_1-x_j)^n+\ldots+c_n\cdot(x_n-x_j)^n
+            \end{array}\right.$$
+            Aplicando ahora que los nodos son equiespaciados, obtenemos el siguiente sistema:
+                        $$ \left\{\begin{array}{l}
+                0=c_o+c_1+\ldots+c_n   \\
+                \dfrac{1}{h}=c_o\cdot(-j)+c_1\cdot(1-j)+\ldots+c_n\cdot(n-j)\\
+                0=c_o\cdot(-j)^2+c_1\cdot(1-j)^2+\ldots+c_n\cdot(n-j)^2\\
+                \vdots\\
+                0=c_o\cdot(-j)^n+c_1\cdot(1-j)^n+\ldots+c_n\cdot(n-j)^n
+            \end{array}\right.$$
+            Por ser la matriz de este sistema la matriz traspuesta de Vandermonde en los nodos $\{i-j\}_{i=0}^n$ será ivertible siempre y cuando los nodos sean distintos entre sí, llegando así a la conclusión que deseábamos.
+            \qed\end{dem}
+            \begin{ejem}
+        Deduciremos la fórmula de tres puntos centrada. El sistema obtenido al tomar $j=1$ y $n=2$ es el siguiente:
+        $$ \left\{\begin{array}{l}
+                0=c_o+c_1+c_2   \\
+                \dfrac{1}{h}=-c_o+c_2\\
+                0=c_o+c_2
+            \end{array}\right.$$
+        Por la tercera ecuación, deducimos que $-c_o=c_2$ y, por la primera, que $c_1=0$. Utilizando esto en la segunda ecuación se tiene que
+        $$\dfrac{1}{h}=c_2+c_2\Longrightarrow c_2=\dfrac{1}{2h}\Longrightarrow c_o=-\dfrac{1}{2h}$$
+        Y la fórmula obtenida es
+        $$f'(x_1)\approx\dfrac{f(x_1+h)-f(x_1-h)}{2h}$$
+        \end{ejem}
+        \begin{ejem}
+    Deduciremos la fórmula de cinco puntos centrada. Tomando $n=4$ y $j=2$ obtenemos el siguiente sistema:
+    $$\begin{array}{r}
+               E_1   \\
+            E_2\\
+            E_3\\
+            E_4 \\
+            E_5
+            \end{array}
+     \left\{\begin{array}{l}
+                0=c_o+c_1+c_2+c_3+c_4   \\
+                \dfrac{1}{h}=-2c_o\cdot-c_1+c_3+2c_4\\
+                0=4c_o+c_1+c_3+4c_4\\
+                0=-8c_o-c_1+c_3+8c_4\\
+                0=16c_o+c_1+c_3+16c_4
+            \end{array}\right.$$
+    Haciendo $E_5-E_3$ obtenemos lo siguiente:
+    $$0=12c_o+12c_4\Longrightarrow c_o=-c_4$$
+    Y haciendo $4E_3-E_5$ tenemos que
+    $$0=3c_1+3c_3\Longrightarrow c_1=-c_3$$
+    Aplicando esto en $E_1$ concluimos que $c_2=0$. El sistema queda reducido entonces a las ecuaciones $E_2$ y $E_4$:
+    $$\left\{\begin{array}{l}
+         \dfrac{1}{h}=2c_3+ 4c_4\\
+         0=2c_3+16c_4
+    \end{array}\right.$$
+    Restando ambas ecuaciones obtenemos que $c_4=\dfrac{-1}{12h}$ y sustituyendo en la primera ecuación se tiene que $c_3=\dfrac{8}{12h}$.Con lo cual, la fórmula obtenida es
+    $$f'(x_2)\approx p'_4(x_2)=\dfrac{f(x_2-2h)-8f(x_2-h)+8f(x_2+h)-f(x_2+2h)}{12h}$$
+    
+        \end{ejem}
+       
+        \section{N{\'u}cleos de Peano}
+        \begin{prop}
+        Dada $f\in\mathcal{C}^{n+1}([a,b])$ se tiene que
+        $$f(x)=\sum_{k=0}^n\dfrac{f^{(k)}(a)}{k!}\cdot (x-a)^k+\dfrac{1}{n!}\int_a^x f^{(n+1)}(t)\cdot (x-t)^ndt$$
+        \end{prop} 
+        \begin{dem}
+        Haremos la demostración por inducción sobre $n$. Para $n=0$, por el Teorema Fundamental del Cálculo se tiene trivialmente que $f(x)=f(a)+\int_a^xf'(t)dt$. Supongamos entonces que la fórmula es cierta para $n-1$:
+        $$f(x)=\sum_{k=0}^{n-1}\dfrac{f^{(k)}(a)}{k!}\cdot (x-a)^k+\dfrac{1}{(n-1)!}\int_a^x f^{(n)}(t)\cdot (x-t)^{n-1}dt$$
+        Integrando por partes el segundo miembro (tomando $u=f^{(n)}(t)$ y $dv=(x-t)^{n-1}dt$) se tiene que
+        $$f(x)=\sum_{k=0}^{n-1}\dfrac{f^{(k)}(a)}{k!}\cdot (x-a)^k+\dfrac{1}{(n-1)!}\left( \left[\dfrac{f^{(n)}(t)\cdot (x-t)^n}{n}\right]_{t=a}^{t=x}+\dfrac{1}{n}\int_a^x f^{(n+1)}(t)\cdot (x-t)^ndt\right)=$$
+        $$=\sum_{k=0}^{n-1}\dfrac{f^{(k)}(a)}{k!}\cdot (x-a)^k+\dfrac{f^{(n)}(a)\cdot (x-a)^n}{n!}+\dfrac{1}{n!}\int_a^x f^{(n+1)}(t)\cdot (x-t)^ndt=$$
+        $$=\sum_{k=0}^n\dfrac{f^{(k)}(a)}{k!}\cdot (x-a)^k+\dfrac{1}{n!}\int_a^x f^{(n+1)}(t)\cdot (x-t)^ndt$$
+        \qed\end{dem}
+        \begin{teo}
+        (\textbf{del núcleo de Peano}) Sea $\mathcal{L}:\mathcal{C}^{\infty}([a,b])\longrightarrow \mathbb{R}$ tal que $\mathbb{P}_n[x]\subset Ker\, \mathcal{L}$. Entonces, dada $f\in\mathcal{C}^{n+1}([a,b])$ se tiene que
+        $$\mathcal{L}(f)=\dfrac{1}{n!}\int_a^b K_n(t)\cdot f^{(n+1)}(t)dt$$
+        donde $K_n(t)=\mathcal{L}((x-t)_+^n)$ es el \textbf{núcleo de Peano} de orden $n$ del operador $\mathcal{L}$ y se define
+        $$(x-t)_+^n=\left\{\begin{array}{cc}
+             (x-t)^n & a\leq t\leq x  \\
+             0 & x<t<b 
+        \end{array}\right.$$
+        \end{teo}
+        \begin{dem}
+        Por la proposición anterior, sabemos que $f$ es de la forma
+        $$f(x)=\sum_{k=0}^n\dfrac{f^{(k)}(a)}{k!}\cdot (x-a)^k+\dfrac{1}{n!}\int_a^x f^{(n+1)}(t)\cdot (x-t)^ndt$$
+        aplicando el operador $\mathcal{L}$ y usando la definición de $(x-t)_+^n$ se tiene que
+        $$\mathcal{L}(f)=\mathcal{L}\left(\sum_{k=0}^n\dfrac{f^{(k)}(a)}{k!}\cdot (x-a)^k\right)+\dfrac{1}{n!}\mathcal{L}\left(\int_a^b f^{(n+1)}(t)\cdot (x-t)_+^ndt\right)$$
+        Por ser el sumatorio un elemento de $\mathbb{P}_n[x]$ sabemos que ese término es nulo. Además, si asumimos que es válido conmutar el operador $\mathcal{L}$ y el signo integral se tiene que
+        $$\mathcal{L}(f)=\dfrac{1}{n!}\mathcal{L}\left(\int_a^b f^{(n+1)}(t)\cdot (x-t)_+^ndt\right)=\dfrac{1}{n!}\int_a^b f^{(n+1)}(t)\cdot\mathcal{L}( (x-t)_+^n)dt=$$
+        $$=\dfrac{1}{n!}\int_a^b K_n(t)\cdot f^{(n+1)}(t)dt$$
+        \qed\end{dem}
+        \begin{cor}
+        Si $K_n(t)$ no cambia de signo en $[a,b]$ entonces
+        \begin{align}
+\mathcal{L}(f)=\dfrac{f^{(n+1)}(\xi)}{n!}\cdot\int_a^bK_n(t)dt
+        \label{peano}
+        \end{align}
+        para cierto $\xi\in(a,b)$.
+        \end{cor}
+        \begin{dem}
+        Supongamos que $K_n(t)>0$, entonces:
+        $$\dfrac{1}{n!}\int_a^b K_n(t)\cdot \underset{x\in[a,b]}{\min}\{f^{(n+1)}(t)\}\leq \mathcal{L}(f)\leq \dfrac{1}{n!}\int_a^b K_n(t)\cdot \underset{x\in[a,b]}{\max}\{f^{(n+1)}(t)\}dt$$
+        $$ \underset{x\in[a,b]}{\min}\{f^{(n+1)}(t)\}\leq \dfrac{\mathcal{L}(f)}{\frac{1}{n!}\int_a^b K_n(t)}\leq \underset{x\in[a,b]}{\max}\{f^{(n+1)}(t)\}$$
+        Como $f\in\mathcal{C}^{n+1}([a,b])$, aplicando el Teorema del Valor Medio podemos concluir que existe $\xi\in(a,b)$ tal que
+        $$f^{(n+1)}(\xi)=\dfrac{\mathcal{L}(f)}{\frac{1}{n!}\int_a^b K_n(t)}$$
+        y despejando se concluye. El caso $K_n(t)<0$ se demuestra de forma análoga.
+        
+        
+        \qed\end{dem}
+        \begin{obs}
+        Los núcleos de Peano son una técnica para deducir los errores de fórmulas numéricas. El operador $\mathcal{L}(f)$ se define como el error de la aproximación considerada  y, mientras $\mathcal{L}$ verifique las hipótesis expuestas anteriormente (linealidad, conmutatividad con el símbolo integral, etc.), podremos utilizar esta técnica para calcular de forma explícita el error cometido.
+
+        \end{obs}
+        \begin{ejem}
+        Deduciremos el error de la fórmula de dos puntos progresiva:
+        $$f'(x_o)\approx\dfrac{f(x_o+h)-f(x_o)}{h}$$
+        Que será exacta para polinomios de grado menor o igual que $1$ ($n=1$). Definimos entonces
+        $$\mathcal{L}(f)=f'(x_o)-\dfrac{f(x_o+h)-f(x_o)}{h}$$
+        Que sabemos que es lineal y conmuta con el signo integral por las propiedades de la derivada. Debemos calcular $K_1(t)=\mathcal{L}((x-t)_+)$, donde
+        $$(x-t)_+=\left\{\begin{array}{cc}
+             (x-t) & x_o\leq t\leq x  \\
+             0 & x<t\leq x_1
+        \end{array}\right.$$
+        Con lo cual
+        $$K_1(t)=\left(\dfrac{d}{dx} (x-t)_+\right)_{x=x_o}-\dfrac{(x_1-t)_+-(x_o-t)_+}{h}$$
+        La función $(x_o-t)_+$ es idénticamente nula (ya que para todo $t$ sabemos que $x_o<t\leq x_1$ y si $t=x_o$ también es nula). Por otro lado, la función $(x_1-t)_+$ es exactamente la función $(x_1-t)$ (por la misma razón que antes). Si desarrollamos además la derivada por su definición como un límite obtenemos lo siguiente
+        $$K_1(t)=\lim_{\delta\to 0}\dfrac{(x_o+\delta-t)_+-(x_o-t)_+}{\delta}+\dfrac{t-x_1}{h}=\lim_{\delta\to 0}\dfrac{(x_o+\delta-t)_+}{\delta}+\dfrac{t-x_1}{h}$$
+        Para $\delta$ suficientemente pequeño, la función $(x_o+\delta-t)_+$ es nula luego
+        $$K_1(t)=\dfrac{t-x_1}{h}$$
+        Además, por ser $t\leq x_1$ sabemos que el signo de $K_1(t)$ no cambia en $[x_o,x_1]$. Con lo cual, aplicando (\ref{peano}), podemos calcular el error de la fórmula como sigue
+        $$\mathcal{L}(f)=f''(\xi)\cdot \int_{x_o}^{x_1}\dfrac{t-x_1}{h}dt=-\dfrac{f''(\xi)}{2h}\cdot [(t-x_1)^2]_{t=x_o}^{t=x_1}=-\dfrac{f''(\xi)}{2}\cdot h$$
+                \end{ejem}        
+
+        \section{Derivadas de orden superior}
+\begin{prop}
+Sea $p_n(x)$ el polinomio de interpolación de una función $f$ en los nodos $\{x_o,\ldots,x_n\}$, entonces:
+\begin{align}
+f^{(n)}(x_o)\approx p^{(n)}_n(x_o)=\dfrac{\Delta^nf(x_o)}{h^n}=\dfrac{1}{h^n}\cdot \sum_{k=0}^n\binom{n}{k}\cdot (-1)^k\cdot f(x_{n-k})
+\label{formula:derivadan}
+\end{align}
+\end{prop}
+\begin{dem}
+La derivada $n-$ésima del polinomio de interpolación será el coeficiente de grado $n$ de $p_n(x)$ multiplicado por $n!$, con lo cual:
+$$p^{(n)}_n(x_o)=f[x_o,\ldots,x_n]\cdot n!=\dfrac{\Delta^n f(x_o)}{h^n\cdot n!}\cdot n!=\dfrac{1}{h^n}\cdot \sum_{k=0}^n\binom{n}{k}\cdot (-1)^k\cdot f(x_{n-k})$$
+\qed\end{dem}
+\begin{obs}
+Como es algo complicado deducir el error de esta fórmula utilizando (\ref{error:int}), el método que aplicaremos para ello será el de los núleos de Peano. Además, a diferencia  de las fórmulas obtenidas para las primeras derivadas, en este caso no habrá diferencia explícita entre las fórmulas regresivas, progresivas o centradas ya que $p_n^{(n)}(x_i)=p_n^{(n)}(x_j)$ para $j,i=0,\ldots,n$. Sin embargo, las fórmulas centradas siguen siendo de interés por tener un orden de convergencia más elevado.
+\end{obs}
+  \begin{ejem}
+        Tomando $n=2$ en (\ref{formula:derivadan}) obtenemos la siguiente fórmula progresiva:
+        $$f''(x_o)\approx\dfrac{f(x_o)-2f(x_o+h)+f(x_o+2h)}{h^2}$$
+        Calculemos el error de esta fórmula con los núcleos de Peano. Definimos entonces
+        $$\mathcal{L}(f)=f''(x_o)-\dfrac{f(x_o)-2f(x_o+h)+f(x_o+2h)}{h^2}$$
+        Estudiemos su comportamiento sobre los polinomios:
+        $$\mathcal{L}(1)=0-\dfrac{1-2+1}{h^2}=0$$
+        $$\mathcal{L}(x-x_o)=0-\dfrac{0-2h+2h}{h^2}=0$$
+        $$\mathcal{L}(x-x_o)^2=2-\dfrac{0^2-2h^2+4h^2}{h^2}=0$$
+        $$\mathcal{L}(x-x_o)^3=0-\dfrac{0^3-2h^3+8h^3}{h^2}=-6h\neq 0$$
+        Por tanto debemos estudiar el signo de $K_2(t)$:
+        $$K_2(t)=\mathcal{L}((x-t)_+^2)=\left(\dfrac{d^2}{dx^2}(x-t)_+^2\right)_{x=x_o}-\dfrac{(x_o-t)_+^2-2(x_o+h-t)_+^2+(x_o+2h-t)_+^2}{h^2}$$
+        Calculemos en primer lugar la derivada segunda. Se tiene que
+        $$\dfrac{d}{dx}(x-t)_+=\lim_{\delta\to 0}\dfrac{(x+\delta-t)_+-(x-t)_+}{\delta}$$
+        si $t>x$ entonces
+        $$\dfrac{d}{dx}(x-t)_+=\lim_{\delta\to 0}\dfrac{x+\delta-t}{\delta}=0$$
+        y si $t<x$
+        $$\dfrac{d}{dx}(x-t)_+=\lim_{\delta\to 0}\dfrac{x+\delta-t-x_o+t}{\delta}=1$$
+        Por otro lado
+        $$\dfrac{d^2}{dx^2}(x-t)_+^2=\dfrac{d}{dx}\;\dfrac{d}{dx}(x-t)_+^2=\dfrac{d}{dx}(2(x-t)\cdot \dfrac{d}{dx}(x-t)_+^2$$
+        Y, como $t>x_o$ podemos deducir que
+        $$\left(\dfrac{d^2}{dx^2}(x-t)_+^2\right)_{x=x_o}=0$$
+        Con lo cual
+        $$K_2(t)=-\dfrac{(x_o-t)_+^2-2(x_o+h-t)_+^2+(x_o+2h-t)_+^2}{h^2}$$
+        Si tomamos $t=x_o+yh$ ($y\in (0,2)$ se tiene que
+        $$K_2(t)=-\dfrac{-2(1-y^2)_+^2h^2+(2-y^2)_+^2h^2}{h^2}=2(1-y)_+^2-(2-y)^2_+$$
+        Si $y\in(1,2)$:
+        $$K_2(t)=-(2-y)^2<0$$ 
+        y si $y\in (0,1)$ entonces
+        $$K_2(t)=2(1-y)^2-(2-y)^2=-2+y^2<0$$        
+       Luego efectivamente $K_2(t)$ no cambia de signo en este intervalo. Aplicando ahora (\ref{peano}) se tiene que
+        $$\mathcal{L}(f)=\dfrac{f'''(\xi)}{2}\int_{x_o}^{x_o+2h}K_2(t)dt$$
+        Para no tener que calcular la integral emplearemos que
+        $$\mathcal{L}((x-x_o)^3)=-6h=3\int_{x_o}^{x_o+2h}K_2(t)dt\Rightarrow\int_{x_o}^{x_o+2h}K_2(t)dt=-2h$$
+        Concluyendo por tanto que el error de la fórmula es
+        $$\mathcal{L}(f)=f'''(\xi)\cdot h$$
+        
+        
+
+        \end{ejem}
+        \begin{ejem}
+        Deduciremos el error de la fórmula
+        $$f''(x_1)\approx\dfrac{f(x_1-h)-2f(x_1)+2f(x_1+h)}{h^2}$$
+        Definimos entonces 
+        $\mathcal{L}(f)=f''(x_1)-\dfrac{f(x_1-h)-2f(x_1)+2f(x_1+h)}{h^2}$
+        Y observemos que
+        $$\mathcal{L}(1)=0$$
+        $$\mathcal{L}(x-x_1)=0$$
+        $$\mathcal{L}((x-x_1)^2)=0$$
+        $$\mathcal{L}((x-x_1)^3)=0$$
+        $$\mathcal{L}((x-x_1)^4)=-2h^2\neq 0$$
+        Luego el error de la fórmula será
+        $$\mathcal{L}(f)=\dfrac{f^{(4)}(\xi)}{3!}\cdot\int_{x_1-h}^{x_1+h}K_3(t)dt$$
+        Siempre y cuando el signo de $K(t)$ no cambie en el intervalo $(x_1-h,x_1+h)$. Supongamos que esto es así, si tomamos $f=(x-x_1)^4$ se tiene que
+        $$\mathcal{L}(f)=-2h^2=\dfrac{4!}{3!}\cdot\int_{x_1-h}^{x_1+h}K_3(t)dt\Longrightarrow\int_{x_1-h}^{x_1+h}K_3(t)dt=-\dfrac{h^2}{2}$$
+        Y con lo cual
+        $$\mathcal{L}(f)=\dfrac{f^{(4)}(\xi)}{12}\cdot h^2$$
+        \end{ejem}
+
+\section{Extrapolación de Richardson}
+\begin{met}(\textbf{de la extrapolación de Richardson})
+Supongamos que tenemos una fórmula $N_o(h)$ para aproximar un valor $\mathcal{L}(f)$ con una convergencia de orden $k$:
+$$\mathcal{L}(f)=N_o(h)+a_1h^k+\sum_{i=2}^{\infty}a_ih^{ik}$$
+Entonces la fórmula
+\begin{align}
+N_j(h)=\dfrac{2^{kj}\cdot N_{j-1}\left(\dfrac{h}{2}\right)-N_{j-1}(h)}{2^{kj}-1}
+ \label{richardson}
+\end{align}
+tiene un orden de convergencia $(j+1)\cdot k$.
+\end{met}
+\begin{dem}
+Haremos la demostración por inducción sobre $j$. Veamos el caso $j=1$. Sustituyendo $h$ por $\dfrac{h}{2}$ obtenemos lo siguiente
+$$L(f)=N_o\left(\dfrac{h}{2}\right)+a_1\dfrac{h^k}{2^k}+\sum_{i=2}^{\infty}a_i\dfrac{h^{ik}}{2^{ik}}$$
+Si multiplicamos esta expresión por $2^k$ y le restamos la fórmula inicial se tiene que
+$$(2^k-1)\mathcal{L}(f)=2^k\cdot N_o\left(\dfrac{h}{2}\right)-N_o(h)+\sum_{i=2}^\infty a_i(2^{k(1-i)}-1)h^{ki}$$
+Tomando ahora $a_i^{(1)}=a_i\cdot \dfrac{2^{k(1-i)}-1}{2^k-1}$ obtenemos lo siguiente
+$$L(f)=\dfrac{2^{k}\cdot N_o\left(\dfrac{h}{2}\right)-N_{o}(h)}{2^k-1}+a_2^{(1)}h^{2k}+\sum_{i=3}^\infty a_i^{(1)}\cdot h^{ki}$$
+luego la fórmula
+$$N_1(h)=\dfrac{2^{k}\cdot N_o\left(\dfrac{h}{2}\right)-N_{o}(h)}{2^k-1}$$
+Tendrá un orden de convergencia $2k$ como queríamos demostrar. Supongamos entonces que la fórmula $N_{j-1}$ es de orden $j\cdot k$:
+$$\mathcal{L}(f)=N_{j-1}(h)+a_j^{(j-1)}\cdot h^{jk}+\sum_{i=j+1}^{\infty}a_i^{(j-1)}\cdot h^{ik}$$
+Sustituyendo $h$ por $\dfrac{h}{2}$ se tiene que
+$$\mathcal{L}(f)=N_{j-1}\left(\dfrac{h}{2}\right)+a_j^{(j-1)}\dfrac{h^{jk}}{2^{jk}}+\sum_{i=j+1}^{\infty}a_i^{(j-1)}\dfrac{h^{ik}}{2^{ik}}$$
+Haciendo manipulaciones similiares a las anteriores podemos deducir que
+$$\mathcal{L}(h)=\dfrac{2^{kj}\cdot N_{j-1}\left(\dfrac{h}{2}\right)-N_{j-1}(h)}{2^{kj}-1}+a_{j+1}^{(j)}h^{(j+1)k}+\sum_{i=j+2}^{\infty}a_i^{(j)}h^{ik}$$
+\qed\end{dem}
+\begin{ejem}
+Apliquemos este método a la fórmula progresiva de dos puntos
+$$f'(x_o)\approx\dfrac{f(x_o+h)-f(x_o)}{h}=N_o(h)$$
+Que tendrá un orden de convergencia lineal ($k=1$) como se demostró anteriormente. Entonces la fórmula obtenida en la primera iteración será
+$$N_1(h)=2N_o\left(\dfrac{h}{2}\right)-N_o(h)=4\cdot\dfrac{f(x_o+h/2)-f(a)}{h}-\dfrac{f(x_o+h)-f(x_o)}{h}=$$
+$$=\dfrac{-3f(x_o)+4f(x_o+h/2)-f(x_o+h)}{h}$$
+La cual coincide con la fórmula progresiva de tres puntos (que sabemos que tiene convergencia cuadrática).
+\end{ejem}
+\section{Ejercicios}
+\begin{ejer}
+En un circuito con un voltaje impreso $g(t)$ y una inductancia $L$, la primera ley de Kirchoff nos da la siguiente relación:
+$$g(t)=L \dfrac{di}{dt}+Ri$$
+donde $R$ es la resistencia e $i$ es la corriente. Supongamos que medimos la corriente para distintos valores de $t$ y obtenemos los datos:
+$$\begin{array}{c|c|c|c|c|c}
+    t & 1.00&1.01 &1.02&1.03&1.04  \\
+    \hline
+    i(t) & 3.10 &3.12 &3.14&3.18&3.24 
+\end{array}$$
+donde $t$ está medido en segundos, $i$ en amperios, la inductancia $L$ es una constante de $0.98$ henrios y la resistencia es $0.142$ ohms. Aproxima el voltaje $g(t)$ cuando $t$ toma los valores de la tabla anterior.
+\end{ejer}
+\begin{sol}
+Si tomamos $t_o=1$ y $h=0.01$, debemos calcular $g(t_j)$ donde $t_j=t_o+jh$ con $j\in\{0,1,2,3,4\}$. Emplearemos la fórmula de tres puntos progresiva para calcular $i'(t_o)$:
+$$i'(t_o)\approx\frac{-3i(t_o)+4i(t_o+h)-i(t_o+2h)}{2h}\approx 2.00$$
+Para $j=1,2,3$ utilizamos la fórmula centrada de tres puntos
+$$i'(t_j)\approx\dfrac{i(x_j+h)-i(x_j-h)}{2h}$$
+Obteniendo los siguientes resultados:
+$$i'(t_1)\approx 2.00\qquad i'(t_2) \approx 3.00 \qquad i'(t_3)\approx 5.00$$
+Por último, empleamos la fórmula de tres puntos regresiva para calcular $i'(t_4)$:
+$$i'(t_4)\approx\frac{3i(t_4)-4i(t_4-h)+i(t_4-2h)}{2h}\approx 7.00$$
+Los valores obtenidos para el voltaje $g(t)$ son los siguientes:
+$$\begin{array}{c|c|c|c|c|c}
+    t & 1.00&1.01 &1.02&1.03&1.04  \\
+    \hline
+    g(t) & 2.40 &2.40 &3.39&5.35&7.32
+\end{array}$$
+\end{sol}
+\begin{ejer}
+¿Cuál es el fallo del siguiente análisis? Mediante la fórmula de Taylor, se tiene que:
+$$f(x+h)-f(x)=hf'(x)+\dfrac{h^2}{2}f''(x)+\dfrac{h^3}{6}f'''(\xi_1)$$
+$$f(x-h)-f(x)=-hf'(x)+\dfrac{h^2}{2}f''(x)-\dfrac{h^3}{6}f'''(\xi_2)$$
+Entonces:
+$$f''(x)=\dfrac{f(x+h)-2f(x)+f(x-h)}{h^2}-\dfrac{h}{6}(f'''(\xi_1)-f'''(\xi_2))$$
+Y, por tanto, el error en la fórmula de aproximación para $f''(x)$ es $O(h)$.
+\end{ejer}
+\begin{sol}
+El error del razonamiendo es afirmar que el término
+$$\dfrac{h}{6}(f'''(\xi_1)-f'''(\xi_2))$$
+es de orden $h$. Esto implica asumir que $f'''(\xi_1)-f'''(\xi_2)$ no depende de $h$, lo cual no es cierto en general. Para obtener el error de esta fórmula, debemos considerar un término más en los desarrollos de Taylor del enunciado:
+$$f(x+h)-f(x)=hf'(x)+\dfrac{h^2}{2}f''(x)+\dfrac{h^3}{6}f'''(x)+\dfrac{h^4}{24}f^{(4)}(\xi_1)$$
+$$f(x-h)-f(x)=-hf'(x)+\dfrac{h^2}{2}f''(x)-\dfrac{h^3}{6}f'''(x)+\dfrac{h^4}{24}f^{(4)}(\xi_2)$$
+con $\xi_1\in(x,x+h)$ y $\xi_2\in(x-h,x)$. Sumando ambas expresiones:
+$$f(x+h)-2f(x)+f(x-h)=h^2f''(x)+\dfrac{h^4}{24}(f^{4}(\xi_1)+f^{(4)}(\xi_2))$$
+Si asumimos que $f^{(4)}$ es continua, podemos aplicar el teorema del valor intermedio y por tanto sabemos que existe $\xi\in(\xi_2,\xi_1)$ tal que
+$$f^{(4)}(\xi)=\dfrac{f^{(4)}(\xi_1)+f^{(4)(\xi_2)}}{2}$$
+Con lo cual
+$$f''(x)=\dfrac{f(x+h)-2f(x)+f(x-h)}{h^2}-\dfrac{h^2}{12}f^{(4)}(\xi)$$
+Y la fórmula de aproximación considerada es realmente de orden $O(h^2)$.
+\end{sol}
+\begin{ejer}
+Deduce la fórmula
+$$f''(x)\approx \dfrac{2}{h^2}\left(\dfrac{f(x_o)}{1+\alpha}-\dfrac{f(x_1)}{\alpha}+\dfrac{f(x_2)}{\alpha(\alpha+1)}\right)$$
+utilizando los puntos no equiespaciados $x_o<x_1<x_2$, donde $x_1-x_o=h$ y $x_2-x_1=\alpha h$.
+\end{ejer}
+\begin{sol}
+El polinomio de interpolación de Newton de grado $2$ de $f(x)$ en los nodos $\{x_o,x_1,x_2\}$ es 
+$$p_2(x)=f(x_o)+f[x_o,x_1](x-x_o)+f[x_o,x_1,x_2](x-x_o)(x-x_1)$$
+Si aproximamos $f''(x)$ por $p''_2(x)$ tenemos que
+$$f''(x)\approx p''_2(x)=2\cdot f[x_o,x_1,x_2]$$
+Calculemos entonces $f[x_o,x_1,x_2]$:
+$$f[x_o,x_1,x_2]=\dfrac{f[x_1,x_2]-f[x_o,x_1]}{x_2-x_1}=\dfrac{1}{(\alpha+1)h}\left(\dfrac{f(x_2)-f(x_1)}{x_2-x_1}-\dfrac{f(x_1)-f(x_o)}{x_1-x_o}\right)=$$
+$$=\dfrac{1}{(\alpha+1)h}\left(\dfrac{f(x_2)-f(x_1)}{\alpha h}-\dfrac{f(x_1)-f(x_o)}{h}\right)=\dfrac{1}{(\alpha+1)h}\left(\dfrac{f(x_2)-(1+\alpha)f(x_1)+\alpha f(x_o)}{\alpha h}\right)=$$
+$$=\dfrac{1}{h^2}\left(\dfrac{f(x_o)}{1+\alpha}-\dfrac{f(x_1)}{\alpha}+\dfrac{f(x_2)}{\alpha(\alpha+1)}\right)$$
+Concluyendo entonces que
+$$f''(x)\approx \dfrac{2}{h^2}\left(\dfrac{f(x_o)}{1+\alpha}-\dfrac{f(x_1)}{\alpha}+\dfrac{f(x_2)}{\alpha(\alpha+1)}\right)$$
+\end{sol}
+\begin{ejer}
+Un cierto cálculo requiere una forma de aproximación para $f'(x)+f''(x)$. ¿Cómo de buena es la expresión siguiente]
+$$f'(x)+f''(x)\approx \left(\dfrac{2+h}{2h^2}\right)f(x+h)-\left(\dfrac{2}{h^2}\right)f(x)+\left(\dfrac{2-h}{2h^2}\right)$$
+Deduce esta expresión y su término de error.
+\end{ejer}
+\begin{sol}
+Consideremos los siguientes desarrollos de Taylor
+$$f(x+h)=f(x)+hf'(x)+\dfrac{h^2}{2}f''(x)+\dfrac{h^3}{6}f'''(\xi_1)$$
+$$f(x-h)=f(x)-hf'(x)+\dfrac{h^2}{2}f''(x)-\dfrac{h^3}{6}f'''(\xi_2)$$
+Restando ambas expresiones obtenemos lo siguiente:
+$$f(x+h)-f(x-h)=2hf'(x)+\dfrac{h^3}{6}(f'''(\xi_1)+f'''(\xi_2))$$
+Por el teorema del valor intermedio sabemos que existe $\xi\in(\xi_2,\xi_1)$ tal que \newline $f'''(\xi)=\frac{f'''(\xi_1)+f'''(\xi_2)}{2}$, con lo cual
+$$f'(x)=\dfrac{f(x+h)-f(x-h)}{2h}-\dfrac{h^2}{6} f'''(\xi)$$
+Si consideramos ahora un término más en los desarrollos de Taylor anteriores podemos obtener similarmente una expresión para $f''(x)$:
+$$f(x+h)=f(x)+hf'(x)+\dfrac{h^2}{2}f''(x)+\dfrac{h^3}{6}f'''(x)+\dfrac{h^4}{24}f^{(4)}(\xi_1)$$
+$$f(x-h)=f(x)-hf'(x)+\dfrac{h^2}{2}f''(x)-\dfrac{h^3}{6}f'''(x)+\dfrac{h^4}{24}f^{(4)}(\xi_2)$$
+Sumando ahora ambas identidades
+$$f(x+h)+f(x-h)=2f(x)+h^2f''(x)+\dfrac{h^4}{12}f^{(4)}(\xi)$$
+$$f''(x)=\dfrac{f(x+h)-2f(x)+f(x-h)}{h^2}-\dfrac{h^2}{12}f^{(4)}(\xi)$$
+Luego podemos concluir que
+$$f'(x)+f''(x)=\dfrac{f(x+h)-f(x-h)}{2h}+\dfrac{f(x+h)-2f(x)+f(x-h)}{h^2}-\dfrac{h^2}{12}f^{(4)}(\xi)-\dfrac{h^2}{6} f'''(\xi)=$$
+$$=\dfrac{(2+h)f(x+h)-4f(x)+(2-h)}{2h^2}-\dfrac{h^2}{6}\left(f'''(\xi_1)+\dfrac{f^{(4)}(\xi_2)}{2}\right)=$$
+$$=\left(\dfrac{2+h}{2h^2}\right)f(x+h)-\left(\dfrac{2}{h^2}\right)f(x)+\left(\dfrac{2-h}{2h^2}\right)-\dfrac{h^2}{6}\left(f'''(\xi_1)+\dfrac{f^{(4)}(\xi_2)}{2}\right)$$
+Siendo esta aproximación de orden $O(h^2)$.
+\end{sol}

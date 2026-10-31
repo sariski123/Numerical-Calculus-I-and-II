@@ -1,0 +1,1887 @@
+ \chapter{Sistemas de ecuaciones lineales}  
+ \section{Introducción}
+ Un sistema de ecuaciones lineales es un par $(f,b)$ donde $f: E \longrightarrow F$ es una aplicación lineal y $b \in F$. Generalmente supondremos además que $\dim E = \dim F$ y que $f$ es inyectiva. El sistema $(f,b)$ está definido de forma implícita, es decir, no tenemos escogidas ninguna base ni en $E$ ni en $F$. Fijada una base, el par $(f,b)$ tendrá una representación matricial dada por
+            $$Ax=b$$
+            donde $A$ será una matriz $n\times n $ ($\dim E=n$) y $b=(b_1,\ldots,b_n)$.       
+            
+Determinaremos algoritmos para transformar el sistema $Ax=b$ en uno (con la misma solución) cuya matriz sea más sencilla y se pueda calcular por un método directo. Por otro lado, desarrollaremos también métodos numéricos para aproximar las soluciones de un sistema de ecuaciones lineales, analizando las condiciones necesarias para su convergencia
+        \section{M{\'e}todos directos}
+        \begin{teo}
+            [\textbf{de Rouché-Frobenius}] Sea $(f,b)$ un sistema de ecuaciones lineales definido por:
+            $$\left\{\begin{array}{c}
+                 a_{11}x_1+a_{12}x_2+\ldots+a_{1n}x_n=b_1  \\
+                 a_{21}x_1+a_{22}x_2+\ldots+a_{2n}x_n=b_2 \\
+                 \vdots \\
+                 a_{n1}x_1+a_{n2}x_2+\ldots+a_{nn}x_n=b_n
+            \end{array}\right.$$
+            Entonces el sistema tiene solución única si y solo si $rg(A)=rg(A^*)$, donde
+            $$A=\left(\begin{array}{cccc}
+                 a_{11}&a_{12}&\cdots&a_{1n}  \\
+                 a_{21} & a_{22}&\cdots & a_{2n}\\
+                 \vdots & \vdots &\ddots &\vdots \\
+                 a_{n1} & a_{n2}&\cdots & a_{nn}
+            \end{array}\right)\qquad 
+            A^*=\left(\begin{array}{ccccc}
+                 a_{11}&a_{12}&\cdots&a_{1n} &b_1 \\
+                 a_{21} & a_{22}&\cdots & a_{2n}&b_2\\
+                 \vdots & \vdots &\ddots &\vdots&\vdots \\
+                 a_{n1} & a_{n2}&\cdots & a_{nn}&b_n
+            \end{array}\right)$$
+        \end{teo}
+        \begin{ejes}
+        Veamos ahora algunos ejemplos de sistemas de ecuaciones donde la matriz $A$ tiene una forma más o menos sencilla
+        \begin{itemize}
+            \item Supongamos que $A=Id$, entonces el sistema $Ax=b$ tiene la solución trivial $x=b$.
+            \item Supongamos ahora que $A$ es una matriz diagonal, esto es, tenemos un sistema de la forma
+              $$\begin{pmatrix}
+            a_{11} & \\
+            &a_{22}& \\
+            & & \ddots &\\
+             && &a_{nn}
+            \end{pmatrix}\cdot \begin{pmatrix}
+            x_1\\
+            x_2\\
+            \vdots\\
+            x_n
+            \end{pmatrix}=\begin{pmatrix}
+            b_1\\
+            b_2\\
+            \vdots\\
+            b_n
+            \end{pmatrix}$$
+            Cuyas soluciones serán 
+            $$x_i=\dfrac{b_i}{a_{ii}}$$
+            \item Otro caso interesante es cuando la matriz del sistema es triangular inferior ($L$):
+            $$\begin{pmatrix}
+            a_{11} & \\
+            a_{21}&a_{22}& \\
+            \vdots&\vdots& \ddots &\\
+             a_{n1}&a_{n2}&\cdots &a_{nn}
+            \end{pmatrix}\cdot \begin{pmatrix}
+            x_1\\
+            x_2\\
+            \vdots\\
+            x_n
+            \end{pmatrix}=\begin{pmatrix}
+            b_1\\
+            b_2\\
+            \vdots\\
+            b_n
+            \end{pmatrix}$$
+            Las soluciones de este sistema se pueden calcular de forma recursiva por el método del \textbf{descenso}:
+            \begin{align}
+             x_1=\dfrac{b_1}{a_{11}}\qquad x_i=
+\dfrac{1}{a_{ii}}(b_i-\sum_{j=1}^{i-1}a_{ij}x_j) 
+\label{met:des}
+            \end{align}
+\item Por último, supongamos que $A$ es una matriz triangular superior ($U$):
+$$\begin{pmatrix}
+             a_{11}&a_{12}&\cdots &a_{1n} \\
+            &a_{22}&\cdots&a_{2n} \\
+            & &\ddots& \vdots\\
+            & &  &a_{nn}
+            \end{pmatrix}\cdot \begin{pmatrix}
+            x_1\\
+            x_2\\
+            \vdots\\
+            x_n
+            \end{pmatrix}=\begin{pmatrix}
+            b_1\\
+            b_2\\
+            \vdots\\
+            b_n
+            \end{pmatrix}$$
+        De forma similar al caso anterior podemos calcular recursivamente las soluciones por el método del \textbf{remonte}:
+        \begin{align}
+           x_n=\dfrac{b_n}{a_{nn}}  \qquad x_i=\dfrac{1}{a_{ii}}(b_i-\sum_{j=i+1}^{n}a_{ij}x_j)
+           \label{met:rem}
+        \end{align}
+        \end{itemize}
+        \end{ejes}
+\begin{obs}
+El resto de casos de matrices no son así de triviales, de forma que lo que hacemos en general es reducir nuestro sistema a un sistema con matriz triangular superior o triangular inferior, utilizando una matriz de cambio de base triangular inferior o superior respectivamente.
+\end{obs}
+        \section{Eliminaci{\'o}n gaussiana}
+        \begin{defin}
+        Diremos que dos sistemas de ecuaciones $(A,b)$ y $(B,d)$ son \textbf{equivalentes} si tienen exactamente las mismas soluciones. Cualquier sistema obtenido tras la aplicación de una secuencia finita de las siguientes transformaciones elementales será equivalente al inicial: \vspace{-5mm}
+        \begin{itemize}
+        \item[(i)] Intercambiar dos ecuaciones.
+        \item[(ii)] Multiplicar una ecuación por un número $\lambda\neq 0$.
+        \item[(iii)] Sumar a una ecuación un múltiplo de otra.
+        \end{itemize}
+        \end{defin}
+        \begin{ejem}
+            Dado el sistema 
+            $$\left\{ \begin{array}{l}
+                 x_1 + 2x_2 = 3  \\
+                 4x_1 + 5x_2 = 6 
+            \end{array}\right.$$
+            Lo podemos transformaren uno triangular superior por medio de las siguientes transformaciones elementales. 
+            $$\left\{ \begin{array}{l}
+                 x_1 + 2x_2 = 3  \\
+                 4x_1 + 5x_2 = 6 
+            \end{array}\right. \overset{F'_2=F_2-4F_1}{\Longrightarrow}  \left\{ \begin{array}{l}
+                 x_1 + 2x_2 = 3  \\
+                 \cancel{4x_1} + 5x_2- \cancel{4x_1} -8x_2 = 6 - 12 
+            \end{array}\right.\Longrightarrow \left\{ \begin{array}{l}
+                 x_1 + 2x_2 = 3  \\
+                  -3x_2 =- 6 
+            \end{array}\right.$$
+            Consiguiendo así la matriz que queríamos. Calculemos ahora la matriz de cambio de base. Llamando $\{e_1,e_2\}$ la base desde la que partimos, tenemos que
+            $$b=3e_1+6e_2$$
+            $$f(e_1)=e_1+4e_2 = \overline{e}_1 \iff e_1=\overline{e}_1-4e_2$$
+            $$ f(e_2)=2e_1+5e_2=2\overline{e}_1 -8e_2 + 5e_2 = 2 \overline{e}_1-3e_2=  2 \overline{e}_1-3\overline{e}_2$$
+            Y la matriz del cambio de base sería
+            $$L = \begin{pmatrix}
+                1 & 0 \\ 
+                -4 & 1
+            \end{pmatrix}$$
+         \end{ejem}       
+    \begin{obs}
+        Supongamos ahora que tenemos el sistema general 
+        $$\left\{ \begin{array}{l}
+                 a_{11}x_1 + a_{12}x_2 = b_1  \\
+                 a_{21}x_1 + a_{22}x_2 = b_2 
+            \end{array}\right.$$
+            Si $a_{11} \neq 0$, podemos tomar $\ell_{21}=\frac{a_{21}}{a_{11}}$ y reducir el sistema aplicando la siguiente transformación
+             $$\left\{ \begin{array}{l}
+                 a_{11}x_1 + a_{12}x_2 = b_1  \\
+                 a_{21}x_1 + a_{22}x_2 = b_2 
+            \end{array}\right.\overset{F'_2=F_2-\ell_{21}\cdot F_1}{\Longrightarrow}
+             \left\{ \begin{array}{l}
+                 a_{11}x_1 + a_{12}x_2 = b_1  \\
+                 \underbrace{(a_{21}-\ell_{21} \cdot a_{11})}_{=0}x_1+\underbrace{(a_{22}-\ell_{21} \cdot a_{12})}_{=a_{22}^{(1)}}x_2=\underbrace{b_2-\ell_{21}b_1}_{b_2^{(1)}} 
+            \end{array}\right.$$
+            Y obtendríamos por tanto un sistema con matriz triangular superior
+            $$\left\{ \begin{array}{l}
+                 a_{11}x_1 + a_{12}x_2 = b_1  \\
+                  a^{(1)}_{22}x_2 = b^{(1)}_2 
+            \end{array}\right.$$
+            Veamos ahora el caso general.
+            \end{obs}
+            \begin{met}[\textbf{de eliminación gaussiana}] Consideremos el sistema de $n$ ecuaciones con $n$ incógnitas
+            $$\left\{\begin{array}{l}
+                 a_{11}x_1+a_{12}x_2+\ldots+a_{1n}x_n=b_1  \\
+                 a_{21}x_1+a_{22}x_2+\ldots+a_{2n}x_n=b_2 \\
+                  a_{31}x_1+a_{22}x_2+\ldots+a_{2n}x_n=b_3\\
+                 \qquad \vdots \\
+                 a_{n1}x_1+a_{n2}x_2+\ldots+a_{nn}x_n=b_n
+            \end{array}\right.$$
+            
+            Si $a_{11} \neq 0$, sean $\ell_{i1}=\dfrac{a_{i1}}{a_{11}}$ con $i=2, \ldots, n$. Hagamos la transformación $F'_i=F_i-\ell_{i1}\cdot F_1$ en las ecuaciones $i=2, \ldots, n$. El sistema anterior será equivalente a
+            $$\left\{\begin{array}{l}
+                 a_{11}x_1+a_{12}x_2+\ldots+a_{1n}x_n=b_1  \\
+                 (a_{21}-\ell_{21}a_{11})x_1+(a_{22}-\ell_{21}a_{12})x_2+\ldots+(a_{2n}-\ell_{21}a_{1n})x_n=b_2-\ell_{21}b_1 \\
+                 (a_{31}-\ell_{31}a_{11})x_1+ (a_{32}-\ell_{31}a_{12})x_2+\ldots+ (a_{3n}-\ell_{31}a_{1n})x_n=b_3-\ell_{31}b_1\\
+                 \qquad \vdots \\
+                  (a_{n1}-\ell_{n1}a_{11})x_1+(a_{n2}-\ell_{n1}a_{12})x_2+\ldots(a_{nn}-\ell_{n1}a_{1n})x_n=b_n-\ell_{n1}b_1
+            \end{array}\right.$$
+           Como $a_{i1}-\ell_{i1}\cdot a_{11}=0$, hemos eliminado la variable $x_1$ de todas las ecuaciones menos la primera. Definimos entonces $$a_{ij}^{(1)}=a_{ij}-\ell_{i1}a_{1j},\quad b_i^{(1)}=b_i-\ell_{i1}b_1 \qquad (i>1)$$
+           $$a_{1j}^{(1)}=a_{1j}, \quad b_{1}^{(1)}=b_{1}$$
+           De forma que el sistema obtenido es
+           $$\left\{\begin{array}{l}
+                 a_{11}^{(1)}x_1+a_{12}^{(1)}x_2+\ldots+a_{1n}^{(1)}x_n=b_1^{(1)}  \\
+                 a_{22}^{(1)}x_2+\ldots+a_{2n}^{(1)}x_n=b_2^{(1)} \\
+                 a_{22}^{(1)}x_2+\ldots+a_{2n}^{(1)}x_n=b_3^{(1)}\\
+                 \vdots \\
+                 a_{n2}^{(1)}x_2+\ldots+a_{nn}^{(1)}x_n=b_n^{(1)}
+            \end{array}\right.$$
+            Si $a_{22}^{(1)} \neq 0$ podemos efectuar el mismo proceso de eliminación de nuevo, tomando $\ell_{i2}=\dfrac{a_{i2}^{(1)}}{a_{22}^{(1)}}$ y haciendo la transformación $F'_i=F_i-\ell_{i1}\cdot F_2$ en las ecuaciones $i=3, \ldots, n$. De esta forma, eliminaremos la variable $x_2$ de todas las ecuaciones salvo la primera y la segunda. Tomando ahora
+            $$a_{ij}^{(2)}=a_{ij}^{(1)}-\ell_{i2}a_{2j}^{(1)},\quad b_i^{(2)}=b_i^{(1)}-\ell_{i2}b_2^{(1)} \qquad (i>2)$$
+           $$a_{ij}^{(2)}=a_{ij}^{(1)}, \quad b_{i}^{(2)}=b_{i}^{(1)}\qquad (i\leq 2)$$
+           Obtenemos el siguiente sistema equivalente
+           $$\left\{\begin{array}{l}
+                 a_{11}^{(2)}x_1+a_{12}^{(2)}x_2+\ldots+a_{1n}^{(2)}x_n=b_1^{(2)}  \\
+                 a_{22}^{(2)}x_2+\ldots+a_{2n}^{(2)}x_n=b_2^{(2)} \\
+                 a_{33}^{(2)}x_3+\ldots+a_{2n}^{(2)}x_n=b_3^{(2)}\\
+                 \qquad \vdots \\
+                 a_{n3}^{(2)}x_3+\ldots+a_{nn}^{(2)}x_n=b_n^{(2)}
+            \end{array}\right.$$
+            Reiterando el proceso, si hemos eliminado hasta la incógnita $k$ y si $a_{(k+1)(k+1)}^{(k)}\neq 0$, podemos tomar
+            $$\ell_{i(k+1)}=\dfrac{a^{(k)}_{i(k+1)}}{a_{(k+1)(k+1)}^{(k)}} \quad (i > k+1)$$
+            y las ecuaciones $i > k+1$ quedan tal que
+            $$\sum_{j=k+2}^n a_{ij}^{(k+1)}x_j=b_i^{(k+1)}$$
+            donde 
+            $$a_{ij}^{(k+1)}=a_{ij}^{(k)}-\ell_{i(k+1)}a_{(k+1)j}^{(k)},\quad b_{i}^{(k+1)}=b_i^{(k)}-\ell_{i(k+1)}b_{k+1}^{(k)}\qquad (i>k+1)$$
+            Si podemos continuar con el proceso hasta la última ecuación, tendremos un sistema triangular superior. 
+            $$\begin{pmatrix}
+                a_{11}^{(n-1)} & \cdots & a_{1n}^{(n-1)} \\
+                 & \ddots & \vdots \\
+                 &  & a_{nn}^{(n-1)}
+            \end{pmatrix} \begin{pmatrix}
+                x_1 \\
+                \vdots \\
+                x_n
+            \end{pmatrix}=\begin{pmatrix}
+                b_1^{(n-1)} \\
+                \vdots \\
+                b_n^{(n-1)}
+            \end{pmatrix} $$
+\end{met}
+            \begin{ejem}
+              Consideremos el siguiente sistema de ecuaciones y apliquemos el método de reducción gaussiana:
+              $$\begin{pmatrix}
+              1&0&-1&1\\
+              0&1&2 &1\\
+              1&1&3&0\\
+              2&1&0&2\\
+              \end{pmatrix}
+              \cdot
+              \begin{pmatrix}
+              x\\
+              y\\
+              z\\
+              t
+              \end{pmatrix}
+              =\begin{pmatrix}
+              1\\
+              2\\
+              3\\
+              4
+              \end{pmatrix}$$
+              
+              $$\left(\begin{array}{cccc|c}
+              1&0&-1&1&1\\
+              0&1&2 &1&2\\
+              1&1&3&0&3\\
+              2&1&0&2&4
+              \end{array}\right)
+              \underset{\begin{array}{c}
+                   \ell_{21}=0  \\
+                   \ell_{31}=1 \\
+                   \ell_{41}=2
+              \end{array}}{\mathlarger{\Longrightarrow}}
+              \left(\begin{array}{cccc|c}
+              1&0&-1&1&1\\
+              0&1&2 &1&2\\
+              0&1&4&-1&2\\
+              0&1&2&0&2
+              \end{array}\right)
+              \underset{\begin{array}{c}
+                   \ell_{32}=1 \\
+                   \ell_{42}=1
+              \end{array}}{\mathlarger{\Longrightarrow}}
+              \left(\begin{array}{cccc|c}
+              1&0&-1&1&1\\
+              0&1&2 &1&2\\
+              0&0&2&-2&0\\
+              0&0&0&-1&0
+              \end{array}\right)
+              $$
+              El sistema equivalente con matriz triangular superior obtenido es el siguiente:
+              
+              $$\begin{pmatrix}
+             1&0&-1&1\\
+              0&1&2 &1\\
+              0&0&2&-2\\
+              0&0&0&-1
+              \end{pmatrix}
+              \cdot
+              \begin{pmatrix}
+              x\\
+              y\\
+              z\\
+              t
+              \end{pmatrix}
+              =\begin{pmatrix}
+              1\\
+              2\\
+              0\\
+              0
+              \end{pmatrix}$$
+              
+            \end{ejem}
+   \begin{ejem}
+    Deduciremos la fórmula $\displaystyle \sum_{i=0}^ni^2=a_o+a_1n +a_2n^2+a_3n^3 $.
+    $$n=0\Rightarrow a_o=0$$
+    $$n=1\Rightarrow 1=a_1+a_2+a_3$$
+    $$n=2\Rightarrow 1+4=5=2a_1+4a_2+8a_3$$
+    $$n=3\Rightarrow 1+4+9=14=3a_1+9a_2+27a_3$$
+
+    Teniendo la matriz de Vandermonde
+    $$\begin{pmatrix}
+        1 & 1 & 1 \\
+        2 & 2^2 & 2^3 \\
+        3 & 3^2 & 3^3  
+    \end{pmatrix}\begin{pmatrix}
+        a_1 \\
+        a_2 \\ 
+        a_3
+    \end{pmatrix}=\begin{pmatrix}
+        1 \\ 5 \\ 14
+    \end{pmatrix}$$
+   Lo resolveremos por eliminación gaussiana:
+    $$\left(\begin{array}{ccc|c}
+        1 & 1 & 1&1 \\
+        2 & 4 & 8 &5\\
+        3 & 9 & 27&4  
+    \end{array} \right)
+    \underset{\begin{array}{c}
+                   \ell_{21}=2 \\
+                   \ell_{31}=3
+              \end{array}}{\mathlarger{\Longrightarrow}}
+    \left(\begin{array}{ccc|c}
+        1 & 1 & 1&1 \\
+        0 & 2 & 6 &3\\
+        0 & 6 & 24&11  
+    \end{array}\right) \underset{\begin{array}{c}
+                   \ell_{32}=3 
+              \end{array}}{\mathlarger{\Longrightarrow}}
+        \left(\begin{array}{ccc|c}
+        1 & 1 & 1&1 \\
+        0 & 2 & 6 &3\\
+        0 & 0 &6&2  
+    \end{array} \right)$$
+   Podemos encontrar las soluciones de este sistema por el método del remonte:
+   $$a_1=\dfrac{1}{6} \qquad a_2=\dfrac{1}{2} \qquad a_3=\dfrac{1}{3}$$
+   Con lo cual:
+   $$\sum_{i=0}^ni^2=\dfrac{1}{6}n+\dfrac{1}{2}n^2+\dfrac{1}{3}n^3=\dfrac{n(n+1)(2n+1)}{6}$$
+   \end{ejem} 
+ \section{Factorizaci{\'o}n LU}
+ \begin{obs}
+ Cualquiera de las transformaciones elementales consideradas anteriormente se pueden entender como la multiplicación de una matriz ``elemental'' por la matriz inicial. Por ejemplo:
+ $$\begin{pmatrix}
+    1&0&0\\
+    0&0&1\\
+    0&1&0
+ \end{pmatrix}\cdot\begin{pmatrix}
+    a_{11}&a_{12}&a_{13}\\
+    a_{21}&a_{22}&a_{23}\\
+    a_{31}&a_{32}&a_{33}
+ \end{pmatrix}=
+ \begin{pmatrix}
+    a_{11}&a_{12}&a_{13}\\
+    a_{31}&a_{32}&a_{33}\\
+    a_{21}&a_{22}&a_{23}
+ \end{pmatrix}$$
+$$\begin{pmatrix}
+    1&0&0\\
+    0&\lambda&0\\
+    0&0&\lambda
+ \end{pmatrix}\cdot\begin{pmatrix}
+    a_{11}&a_{12}&a_{13}\\
+    a_{21}&a_{22}&a_{23}\\
+    a_{31}&a_{32}&a_{33}
+ \end{pmatrix}=
+ \begin{pmatrix}
+    a_{11}&a_{12}&a_{13}\\
+    \lambda a_{21}&\lambda a_{22}&\lambda a_{23}\\
+    a_{31}&a_{32}&a_{33}
+ \end{pmatrix}$$
+ $$\begin{pmatrix}
+    1&0&0\\
+    0&1&0\\
+    0&\lambda&1
+ \end{pmatrix}\cdot\begin{pmatrix}
+    a_{11}&a_{12}&a_{13}\\
+    a_{21}&a_{22}&a_{23}\\
+    a_{31}&a_{32}&a_{33}
+ \end{pmatrix}=
+ \begin{pmatrix}
+    a_{11}&a_{12}&a_{13}\\
+     a_{21}&a_{22}&a_{23}\\
+    \lambda a_{21}+a_{31}&\lambda a_{22}+a_{32}&\lambda a_{23}+a_{33}
+ \end{pmatrix}$$
+ \end{obs}
+ El método de factorización $LU$ para resolver sistemas de ecuaciones no es más que el proceso matricial equivalente al método de eliminación de Gauss. Sea $\{e_1,\ldots,e_n\}$ la base estándar de $\mathbb{R}^n$ y $\{\bar{e}_1,\ldots,\bar{e}_n\}$ otra base cualquiera. Sean $A$ y $\overline{A}$ las matrices de una aplicación lineal en sendas bases. Consideremos el siguiente diagrama conmutativo:
+$$\begin{tikzcd}
+\mathbb R^{n}_{\{e_1,\ldots,e_n\} } \arrow{r}{A}  \arrow[swap]{dr}{\overline{A}} & \mathbb R^{n}_{\{e_1,\ldots,e_n\}}\\
+& \mathbb R^{n}_{\{\bar{e}_1,\ldots,\bar{e}_n\}} \arrow{u}{B}
+\end{tikzcd}$$
+Teniéndose entonces  el cambio de base
+$$\boxed{A=B \cdot \overline{A}}$$
+Esto nos será útil para desarrollar este método, ya que el objetivo será descomponer la matriz $A$ de un sistema de ecuaciones por $A=LU$, donde $L$ es una matriz triangular inferior y $U$ una triangular inferior. Si es posible hacer esta factorización, dado el sistema $Ax=b$ obtendríamos una pareja de sistemas
+$$\begin{cases}Ly=b \\ Ux=y\end{cases}$$
+Los cuales son triangular inferior y superior respectivamente, y por tanto, sencillos de resolver por los métodos expuestos anteriormente.
+\begin{obs}
+Expondremos ahora un método para multiplicar matrices que nos será útil más adelante. Sea $A$ una matriz $n \times n$ y $m_1, \ldots, m_r$ tales que $m_1+\cdots+m_r=n$. Sea 
+$$A=\underset{\mathlarger{\mathlarger{m_1 \qquad m_2 \qquad \cdots \qquad m_r}}}{\left(\begin{array}{c | c | cc | c}
+    A_{11} & A_{12} & \cdots & \cdots & A_{1r} \\
+    \hline &&&& \\
+    \hline &&&&\\
+    \hline A_{r1} & A_{r2} & \cdots & \cdots & A_{rr} 
+\end{array}\right)}\begin{array}{c}
+     m_1  \\
+     m_2 \\
+     \vdots \\
+     m_r
+\end{array}$$
+donde cada bloque $A_{ij}$ es de tamaño $m_i\times m_j$. Supongamos que $r=2$ y sean 
+$$A=\left(\begin{array}{c|c}
+   A_{11}  &A_{12}  \\
+   \hline
+   A_{21}  & A_{22}
+\end{array}\right)\quad
+B=\left(\begin{array}{c|c}
+   B_{11}  &B_{12}  \\
+   \hline
+   B_{21}  & B_{22}
+\end{array}\right)$$
+entonces se verifica que 
+$$A+B=\left(\begin{array}{c|c}
+   A_{11}+B_{11}  &A_{12}+B_{12}  \\
+   \hline
+   A_{21}+B_{21}  & A_{22}+B_{22}
+\end{array}\right) \qquad \lambda A= \left(\begin{array}{c|c}
+   \lambda A_{11}  & \lambda A_{12}  \\
+   \hline
+   \lambda A_{21}  & \lambda A_{22}
+\end{array}\right)$$
+$$A \cdot B = \left(\begin{array}{c|c}
+   A_{11}\cdot B_{11} +A_{12}\cdot B_{21} &A_{11}\cdot B_{12} +A_{12}\cdot B_{22}  \\
+   \hline
+   A_{21}\cdot B_{11} +A_{21}\cdot B_{21} & A_{21}\cdot B_{12} +A_{21}\cdot B_{22}
+\end{array}\right)$$
+\end{obs}
+\begin{met}
+[\textbf{de factorización LU}]
+Sea $\{e_1,\ldots,e_n\}$ la base estándar de $\mathbb{R}^n$ y sea $A$ la matriz del sistema de ecuaciones   
+$$\left\{\begin{array}{l}
+                 a_{11}x_1+a_{12}x_2+\ldots+a_{1n}x_n=b_1  \\
+                 a_{21}x_1+a_{22}x_2+\ldots+a_{2n}x_n=b_2 \\
+                  a_{31}x_1+a_{22}x_2+\ldots+a_{2n}x_n=b_3\\
+                 \vdots \\
+                 a_{n1}x_1+a_{n2}x_2+\ldots+a_{nn}x_n=b_n
+            \end{array}\right.$$
+El primer paso de la eliminación gaussiana consiste en hacer nulos todos los términos de la primera columna por debajo de $a_{11}$. Como las columnas de la matriz de una aplicación lineal son las coordenadas de los vectores transformados por dicha aplicación se tiene que
+$$A\cdot e_1=a_{11}e_1+a_{21}e_2+\ldots a_{n1}e_n=a_{11}e_1+\sum_{i=2}^na_{1i}e_i=a_{11}\left(e_1+\sum_{i=2}^n\dfrac{a_{i1}}{a_{11}}e_i\right)$$
+Con lo cual, tomando $\ell_{i1}=\dfrac{a_{i1}}{a_{11}}$  tenemos que
+$$A\cdot e_1=a_{11}\cdot e^{(1)}_{1}$$
+$$e_1^{(1)}=e_1+\sum_{i=2}^n\ell_{i1} e_i^{(1)} $$
+$$e_i^{(1)}=e_i \quad i \geq 2$$
+En general
+$$A\cdot e_j=a_{1j}e_1+a_{2j}e_2+\ldots +a_{nj}e_n=a_{1j}\left(e_1^{(1)}-\sum_{i=2}^n\ell_{i1}e_i^{(1)}\right)+\sum_{i=2}^na_{ij}e_i=a_{1j}e_1^{(1)}+\sum_{i=2}^n\left(a_{1j}-\ell_{1j}a_{ij}\right)e_i^{(1)}$$
+Si tomamos entonces $a_{ij}^{(1)}=a_{1j}-\ell_{1j}a_{ij}$ para $j>1$, habremos transformado nuestro sistema en uno cuya matriz es de la forma  $A^{(1)}=(a_{ij}^{(1)})$  y la matriz de cambio de base es 
+       $$L_1=\begin{pmatrix}
+           1 & 0 & \cdots & 0 \\
+           \ell_{21} & 1 & \cdots & 0 \\
+           \vdots &\vdots &  \ddots & \vdots \\
+           \ell_{n1} & 0 & \cdots & 1 
+       \end{pmatrix}$$
+       Entonces 
+       $$A=A^{(0)}=L_1 \cdot A^{(1)}$$
+Supongamos ahora que $a_{22}^{(1)} \neq 0$, entonces podemos realizar el mismo proceso que antes
+$$A^{(1)}\cdot e^{(1)}_1=a_{11}^{(1)}e_1{(1)}$$
+$$A^{(1)}\cdot e_2^{(1)}=a_{12}^{(1)}+a_{22}^{(1)}e_2^{(1)}+\sum_{i=3}^n a_{i2}^{(1)}e_i^{(1)}=a_{12}^{(1)}+a_{22}^{(1)}\left(e_2^{(1)}+\sum_{i=3}^n \dfrac{a_{i2}^{(1)}}{a_{22}^{(2)}}e_i^{(1)}\right)$$
+Tomando ahora $\ell_{i2}=\dfrac{a_{i2}^{(1)}}{a_{22}^{(1)}}$ tenemos que
+$$ \begin{array}{cc}
+A^{(1)}\cdot e_2^{(1)}=a_{12}^{(1)}e_1^{(1)}+a_{22}^{(1)}e_2^{(2)}
+     e_2^{(2)}=e_2^{(1)}+\sum_{i=3}^k \ell_{i2}e_i^{(2)}   \\
+     e_i^{(2)}=e_i^{(1)} \quad i \neq 2
+\end{array} 
+$$
+Y las matrices se relacionan por la matriz de cambio de base
+$$A^{(1)}=L_2\cdot A^{(2)}$$
+$$L_2=\left(\begin{array}{ccccc}
+   1  &0&0&\cdots&0  \\
+    0 & 1&0&\cdots&0\\
+    0 &\ell_{32}&1&\cdots&0\\
+    \vdots &\vdots&\vdots & \ddots & \vdots\\
+    0&\ell_{n2}&0&\cdots & 1
+\end{array}\right)$$
+de modo que sucesivamente $$A=L_1A^{(1)}, \: A^{(1)}=L_2A^{(2)}, \: \ldots , \: A^{(n-2)}=L_{n-1} A^{(n-1)}$$ donde $A^{(n-1)}$ es una matriz triangular superior. De esta forma, $$A=L_1 \cdot L_2 \: \cdots \: L_{n-1} \cdot U$$
+
+Demostremos más adelante que $L_1 \cdot L_2 \: \cdots \:  L_{n-1}$ es efectivamente una matriz triangular inferior. En conscuencia, si el proceso de elimiación gaussiana no se interrumpe, 
+$$A = L_1\cdot L_2 \: \cdots \: L_{n-1} A^{(n-1)}=L \cdot U$$
+donde $L$ es triagular inferior con 1's en la diagonal principal y $U$ es una matriz triangular superior con $u_{ii}=a_{ii}^{(i-1)}$. 
+
+Además, observemos que 
+$$|A|=|LU|=|L|\cdot |U|=1 \cdot u_{11} \: \cdots \: u_{nn}$$
+
+\begin{prop}
+Con las mismas notaciones que antes $L_1 \cdot L_2 \: \cdots \: L_{n-1}$ es una matriz triangular inferior con 1's en la diagonal principal y cuya columna $j$-ésima (por debajo de la diagonal principal) es 
+$$\begin{pmatrix}
+    \ell_{(j+1)j} \\
+    \vdots \\
+    \ell_{nj}
+\end{pmatrix}$$
+\end{prop}
+\begin{dem}
+
+Empecemos por el producto $L_1\cdot L_2$
+
+$$L_1=\left(\begin{array}{c|ccc}
+           1 & 0 & \cdots & 0 \\
+           \hline
+           \ell_{21} & 1 & \cdots & 0 \\
+           \vdots &\vdots &  \ddots & \vdots \\
+           \ell_{n1} & 0 & \cdots & 1 
+       \end{array}\right) \quad L_2=\left(\begin{array}{c|cccc}
+   1  &0&0&\cdots&0  \\
+   \hline
+    0 & 1&0&\cdots&0\\
+    0 &\ell_{32}&1&\cdots&0\\
+    \vdots &\vdots&\vdots & \ddots & \vdots\\
+    0&\ell_{n2}&0&\cdots & 1
+\end{array}\right)$$
+Utilizando la notación por bloques expuesta anteriormente, se tiene que
+$$L_1=\left(\begin{array}{c| c}
+   1  &0  \\
+   \hline \ell_1 & I 
+\end{array}\right) \quad  L_2=\left(\begin{array}{c| c}
+   1  & 0  \\
+   \hline 0 & \overline{L}_2 
+\end{array}\right)$$
+haciendo el producto obtenemos lo siguiente:
+$$L_1\cdot L_2=\left(\begin{array}{cc}
+   1  & 0 \\
+   \ell_1  & I_2 
+\end{array}\right)=\left(\begin{array}{ccccc}
+   1  &0&\cdots&\cdots&0  \\
+    \ell_{21} & 1&\ddots&\ddots&0\\
+    \ell_{31} &\ell_{32}&1&\ddots&\vdots\\
+    \vdots &\vdots&\ddots & \ddots & 0\\
+    \ell_{n1}&\ell_{n2}&0&\cdots & 1
+\end{array}\right)$$
+
+Supongamos entonces que el producto $L_1\cdot L_2 \: \cdots \: L_{k-1}$ es una matriz triangular inferior de la forma
+$$L_1\cdot L_2 \: \cdots \: L_{k-1}=\left(\begin{array}{ccccccc}
+   1  &0&0&\cdots&\cdots&\cdots&0  \\
+    \ell_{21} & 1&0&&&&0\\
+    \ell_{31} &\ell_{32}&1&\ddots&&&\vdots\\
+    \ell_{41} &\ell_{42}&\ddots & 1 & \ddots &&\vdots\\
+    \vdots &\vdots&&\ell_{k\,k-1}&\ddots &\ddots& \vdots\\
+    \vdots &\vdots&&\vdots&\ddots & \ddots&0\\
+    \ell_{n1}&\ell_{n2}&\cdots&\ell_{n\,k-1}&0&\cdots & 1
+\end{array}\right)$$
+por lo que tenemos que $$L_1\cdot L_2 \: \cdots \: L_{k-1} \cdot L_k
+    =\underset{{\; \; k-1 \quad n-k+1}}{\left(\begin{array}{c | c}
+        \overline{L}_{k-1} & 0 \\
+        \hline M & I
+    \end{array}\right)}
+    \left(\begin{array}{c|c}
+        I & 0 \\
+        \hline 0 & \overline{L}_k
+    \end{array}\right)=\left(\begin{array}{c|c}
+        \overline{L}_{k-1} & 0 \\
+        \hline M & \overline{L}_k 
+    \end{array}\right)=
+    \left(\begin{array}{ccccccc}
+   1  &0&0&\cdots&\cdots&\cdots&0  \\
+    \ell_{21} & 1&0&&&&0\\
+    \ell_{31} &\ell_{32}&1&\ddots&&&\vdots\\
+    \ell_{41} &\ell_{42}&\ddots & 1 & \ddots &&\vdots\\
+    \vdots &\vdots&&\ell_{k+1\,k}&\ddots &\ddots& \vdots\\
+    \vdots &\vdots&&\vdots&\ddots & \ddots&0\\
+    \ell_{n1}&\ell_{n2}&\cdots&\ell_{n\,k}&0&\cdots & 1
+\end{array}\right)$$
+\qed\end{dem}
+    \end{met}
+    \begin{ejem}
+    Consideremos la siguiente matriz
+     $$\begin{pmatrix}
+              1&0&-1&1\\
+              0&1&2 &1\\
+              1&1&3&0\\
+              2&1&0&2\\
+              \end{pmatrix}$$
+    Apliquemos el método de factorización $LU$
+     $$\left(\begin{array}{cccc}
+              1&0&-1&1\\
+              0&1&2 &1\\
+              1&1&3&0\\
+              2&1&0&2
+              \end{array}\right)
+              \underset{\begin{array}{c}
+                   \ell_{21}=0  \\
+                   \ell_{31}=1 \\
+                   \ell_{41}=2
+              \end{array}}{\mathlarger{\Longrightarrow}}
+              \left(\begin{array}{cccc}
+              1&0&-1&1\\
+              0&1&2 &1\\
+              0&1&4&-1\\
+              0&1&2&0
+              \end{array}\right)
+              \underset{\begin{array}{c}
+                   \ell_{32}=1 \\
+                   \ell_{42}=1
+              \end{array}}{\mathlarger{\Longrightarrow}}
+              \left(\begin{array}{cccc}
+              1&0&-1&1\\
+              0&1&2 &1\\
+              0&0&2&-2\\
+              0&0&0&-1
+              \end{array}\right)
+              $$
+    Por tanto
+    $$U=\left(\begin{array}{cccc}
+              1&0&-1&1\\
+              0&1&2 &1\\
+              0&0&2&-2\\
+              0&0&0&-1
+              \end{array}\right)
+              \qquad
+     L=\left(\begin{array}{cccc}
+              1&0&0&0\\
+              0&1&0 &0\\
+              1&1&1&0\\
+              2&1&0&1
+              \end{array}\right)  $$
+
+    \end{ejem}
+    \begin{defin}
+        Sea $A$ una matriz cuadrada $n \times n$, llamaremos \textbf{menor principal $k$-ésimo de $A$} a la matriz $k \times k$ formada por las $k$ primeras filas y $k$ primeras columnas y que llamaremos $A_k$.  
+    \end{defin}
+    \begin{lem}
+        Sea $A^{(k)}$ la matriz resultante después de hacer $k \geq 0$ pasos de eliminación, entonces
+        $$a^{(k)}_{(k+1)(k+1)}=\dfrac{|A_{k+1}|}{|A_k|} \qquad (|A_o|=1)$$
+    \end{lem}
+    \begin{dem}
+        Para $k=0$, la fórmula es 
+        $$a_{11}^{(0)}=\dfrac{|A_1|}{|A_o|}=\dfrac{|a_{11}|}{1}=a_{11}$$
+        Para $k=1$, tenemos que $A=L_1 \cdot A^{(1)}$, que por bloques
+        $$\left(\begin{array}{cc|cc}
+             a_{11} &  a_{12} & \cdots & a_{1n}\\
+             a_{21} &  a_{22} & \cdots & a_{2n} \\
+             \hline \vdots & \vdots & \ddots &\vdots\\
+             a_{n1} &  a_{n2} & \cdots & a_{nn}
+        \end{array} \right)=\left(\begin{array}{cc|cc}
+             1 &  0  & \cdots&  0\\
+             \ell_{21} &  1 & \cdots & a_{2n} \\
+             \hline \vdots & \vdots &\ddots &\vdots \\
+             \ell_{n1} &  0 & \cdots & 0
+        \end{array} \right)\left(\begin{array}{cc|cc}
+             a_{11} &  a_{12} & \cdots & a_{1n}\\
+             0 &  a_{22}^{(1)} & \cdots & a_{2n} \\
+             \hline \vdots & \vdots & \ddots &\vdots \\
+             0 &  a_{n2}^{(1)} & \cdots & a_{nn}^{(1)}
+        \end{array} \right)$$
+       
+        Por las propiedades de la multiplicación de matrices por bloques deducimos \newline que $A_2=(L_1)_1 \cdot A_2^{(1)}$, es decir, 
+        $$|A_2|=|(L_1)_1|\cdot |A_2^{(1)}|=1 \cdot a_{11} \cdot a_{22}^{(1)}=|A_1| \cdot a_{22}^{(1)}$$
+        y despejando, $$a_{22}^{(1)}=\dfrac{|A_2|}{|A_1|}$$
+
+        Supongamos la fórmula cierta hasta $k-1$, es decir, que se verifica que 
+        $$a_{kk}^{(k-1)}=\dfrac{|A_k|}{|A_{k-1}|}\neq 0$$
+        y veamos cómo es $a_{(k+1)(k+1)}^{(k)}$. Hacemos como antes, dividiendo las matrices por cajas
+        $$A=L_1 \: \cdots \: L_k \cdot A^{(k)} \iff \left(\begin{array}{c|c}
+             A_{k+1} & M_1 \\
+             \hline 
+             M_2&M_3
+        \end{array} \right)=\left(\begin{array}{c|c}
+             \bar{L}_{(k+1)} & O \\
+             \hline 
+             M_4& I
+        \end{array} \right)\left(\begin{array}{c|c}
+             A^{(k)}_{k} & M_5 \\
+             \hline
+              M_6& M_7  \\
+        \end{array} \right)$$
+        Deduciéndose entonces que $A_{k+1}=L_{(k+1)} \cdot A^{(k)}_{(k+1)}$, por tanto, $|A_{k+1}|=1 \cdot a_{11} \cdot a_{22}^{(1)} \: \cdots \: a_{(k+1)(k+1)}^{(k)}$, y aplicando la fórmula en los pivotes $a_{11}, \: a_{22}^{(1)}, \: \ldots, \: a_{kk}^{(k-1)}$ tendremos que 
+        $$|A_{k+1}|=\cancel{|A_1|} \cdot \dfrac{\cancel{|A_2|}}{\cancel{|A_1|}} \: \ldots \: \dfrac{|A_k|}{\cancel{|A_{k-1}|}} \cdot a_{(k+1)(k+1)}^{(k)}$$
+        y por tanto, dividiendo, demostramos la fórmula:
+        $$a_{(k+1)(k+1)}^{(k)}=\dfrac{|A_{k+1}|}{|A_{k}|}$$
+    \qed\end{dem}
+    \begin{teo}
+        La condición necesaria y suficiente para que $A$ sea factorizable $A=L \cdot U$ es que todos sus menores principales tengan determinante no nulo.
+    \end{teo}
+    \begin{dem}
+        Es consecuencia del lema que acabamos de ver. Supogamos que $A=LU$, entonces 
+        $$|A_{k+1}|=a_{11} \: \cdots \: a_{(k+1)(k+1)}^{(k)}=u_{11} \cdot u_{22} \: \cdots \: u_{(k+1)(k+1)} \neq 0$$
+        Recíprocamente, si $|A_{k+1}| \neq 0 $ con $k=\{1,\ldots,n-1\}$, entonces podemos hacer todos los pasos de eliminación gaussiana pues los pivotes 
+        $$a_{(k+1)(k+1)}^{(k)}=\dfrac{|A_{k+1}|}{|A_k|}$$
+        son no nulos .
+    \qed\end{dem}
+    \subsection{Ejemplos de matrices factorizables LU}
+    \begin{defin}
+        Una matriz $A$ se dice que es \textbf{definido positiva} cuando 
+        $$\begin{pmatrix}
+            x_1 & \cdots & x_n
+        \end{pmatrix}\cdot A \cdot \begin{pmatrix}
+            x_1 \\ \vdots \\ x_n
+        \end{pmatrix} > 0 \quad \forall \: (x_1,\ldots, x_n) \neq 0$$
+    \end{defin}
+    \begin{prop}
+        Toda matriz $A$ definido positiva es factorizable $A=LU$.
+    \end{prop}
+    \begin{dem}
+        Si $A$ es definido positiva, entonces $|A|\neq 0$, porque si $|A|=0$, entonces existiría $ 0 \neq x  \in \ker A$, entonces
+        $$x^T \cdot A \cdot x=x^T \cdot 0 = 0 $$
+        contradiciendo que $A$ sea definido positiva.
+
+        En general, el menor $A_k$ de una matriz definido positiva es una matriz definido postiva:
+        $$\begin{pmatrix}
+            x_1 & \cdots & x_k
+        \end{pmatrix}\cdot A_k \cdot \begin{pmatrix}
+            x_1 \\ \vdots \\ x_k
+        \end{pmatrix} $$
+        Es fácil verlo utilizando la multiplicación por bloques:
+        $$\Big(
+            x_1 \;\cdots \; x_k \; | \;  0 \; \cdots \; 0  
+        \Big)\cdot \left(\begin{array}{c|c}
+             A_k & B_1  \\
+             \hline B_2 &B_3 
+        \end{array}\right) \cdot \begin{pmatrix}
+            x_1 \\ \vdots \\ x_k \\ \hline  0 \\ \vdots \\ 0
+        \end{pmatrix} \; \iff \; \Big(x^T \; | \; 0 \Big) \cdot \left(\begin{array}{c|c}
+             A_k & B_1 \\
+             \hline B_2 &B_3 
+        \end{array}\right) \cdot \begin{pmatrix}
+           x \\ \hline 0 
+        \end{pmatrix} =$$
+        $$=\Big(x^T \; | \; 0 \Big)\cdot \begin{pmatrix}
+           A_k\cdot x+0\\ \hline B_k\cdot x 
+        \end{pmatrix}=x^T\cdot A_k \cdot x+\cancel{0\cdot B_k \cdot x}=x^T\cdot A_k \cdot x > 0$$
+        por hipótesis, hemos cogido un vector $x \neq 0$ y $A$ era definido positiva. Luego necesariamente $|A_k|\neq 0$, concluyendo que $A$ es factorizable $LU$
+    \qed\end{dem}
+    \begin{defin}
+        Una matriz $A$ se dice que es \textbf{diagonalmente dominante por filas} o \textbf{DDPF} cuando se verifique que 
+        $$|a_{ii}| > \sum_{j \neq i} |a_{ij}| $$
+    \end{defin}
+    \begin{prop}
+        Si $A$ es DDPF entonces es factorizable $LU$.
+    \end{prop}
+    \begin{dem}
+        Veamos que toda matriz $A$ DDPF verifica que que $|A| \neq 0$, es decir, que si $x \in \ker A$, entonces $x=0$. Por redcucción al absurdo, supongamos un $\ker A  \ni x=(x_1, \ldots, x_n)\neq 0$ y sea $i$ un índice tal que 
+        $$|x_i|=\max_{0 \leq j \leq n} |x_j|$$
+        Entonces 
+        $$A \cdot x=\Big(\sum_{j=1}^n a_{ij} \: x_j\Big)=0$$
+        de manera que 
+        $$0=\sum_{j=1}^n a_{ij} \: x_j \iff -a_{ii}\: x_i=\sum_{j\neq i} a_{ij} \: x_j$$
+        y despejando,
+        $$-a_{ii} =\sum_{j\neq i} a_{ij} \: \dfrac{x_j}{x_i}$$
+        y tomando valor absoluto, 
+        $$|a_{ii}| = \left|\sum_{j\neq i} a_{ij} \: \dfrac{x_j}{x_i}\right| \leq \sum_{j \neq i } |a_{ij}| \left| \dfrac{x_j}{x_i}\right| \leq \sum_{j \neq i } |a_{ij}| $$
+         dado que $x_i$ es el máximo de los $x_j$, se verifica que $\frac{x_j}{x_i} \leq 1$, lo cual contradice que $A$ es DDPF, y por tanto asegurando que $|A| \neq 0$. Además, si $A$ es DDPF, todos los menores principales $A_k$ lo son (si $\displaystyle |a_{ii}| > \sum_{j \neq i }^ |a_{ij}|$, entonces $\displaystyle |a_{ii}| > \sum_{j \neq i}^k |a_{ij}|$). Como hemos demostrado que si  una matriz DDPF tiene determinante no nulo, ningún menor principal tiene determinante nulo, aseguramos las condiciones del Teorema de factorización $LU$.
+    \qed\end{dem}
+    \subsection{Método de Crout}
+\begin{obs}
+Este método se puede emplear siempre y cuando sepamos \textit{a priori} que la matriz $A$ es factorizable LU.
+\end{obs}
+\begin{met}[\textbf{de Crout}]
+Si $A=LU$ sean 
+$$L=\begin{pmatrix}
+    1&0&\cdots&\cdots& 0\\
+    \ell_{21}& 1 & \ddots & \ddots &\vdots\\
+    \ell_{31}&\ell_{32}&\ddots& \ddots &\vdots \\
+    \vdots&\vdots&\ddots &1 & 0\\
+    \ell_{n1}&\ell_{n2}&\cdots& \ell_{n\, n-1}& 1 
+\end{pmatrix} \qquad 
+U=\begin{pmatrix}
+    u_{11}&u_{12}&u_{13}&\cdots &u_{1n}\\
+    0&u_{22}&u_{23}&\cdots &u_{2n}\\
+    \vdots & 0&u_{33}&\cdots&u_{3n}\\
+    \vdots&\ddots &\ddots&\ddots&\vdots \\
+    0&0&\cdots&0&u_{nn}
+\end{pmatrix}$$
+Denotemos por $C$ a la matriz formada por los elementos no triviales de las matrices $L$ y $U$, esto es
+$$C=\begin{pmatrix}
+    u_{11}&u_{12}&u_{13}&\cdots &u_{1n}\\
+    \ell_{21}&u_{22}&u_{23}&\cdots &u_{2n}\\
+    \ell_{31} & \ell_{32}&u_{33}&\cdots&u_{3n}\\
+    \vdots&\vdots &\vdots&\ddots&\vdots \\
+    \ell_{n1}&\ell_{n2} &\ell_{n3}&\cdots&u_{nn}
+\end{pmatrix}$$
+De tal forma que en cada iteración del método calcularemos una de las columnas de la matriz $C$. Llamemos $A_1,\ldots, A_n$ a las columnas de $A$ y $U_1, \ldots, U_n$ a las columnas de $U$, de modo y manera que $$A_i=LU_i \qquad \forall i=\{1,\ldots,n\} $$
+Las primeras dos columnas se calculan como sigue
+
+\underline{$i=1$}
+$$\begin{pmatrix}
+    a_{11} \\ a_{12} \\ \vdots \\ a_{n1}
+\end{pmatrix}=L\begin{pmatrix}
+    u_{11} \\ 0 \\ \vdots \\ 0
+\end{pmatrix}= \begin{pmatrix}
+    u_{11} \\ \ell_{21} \cdot u_{11} \\ \vdots \\ \ell_{n1} \cdot u_{11}
+\end{pmatrix} \begin{array}{l}
+      \Rightarrow u_{11}=a_{11} \\
+      \\ 
+      \Rightarrow \ell_{m1}=\dfrac{a_{m1}}{a_{11}}
+\end{array} $$
+
+\underline{$i=2$}
+$$\begin{pmatrix}
+    a_{21} \\ a_{22} \\ \vdots \\ a_{n2}
+\end{pmatrix}=L\begin{pmatrix}
+    u_{12} \\ u_{22} \\ \vdots \\ 0
+\end{pmatrix}= \begin{pmatrix}
+    u_{12} \\ \ell_{21} \cdot u_{12}+u_{22} \\ \vdots \\ \ell_{n1} \cdot u_{11}
+\end{pmatrix}\begin{array}{l}
+      \Rightarrow u_{12}=a_{12} \\ 
+     \Rightarrow u_{22}=a_{22}-\ell_{21}\cdot u_{21}\\
+      \Rightarrow \ell_{m2}=\dfrac{1}{u_{22}} (a_{m2}-\ell_{m1}u_{12})
+\end{array}$$
+Supongamos entonces que tenemos calculadas las primeras $k-1$ columnas de $C$, la columna $k$-ésima la podemos calcular de la siguiente forma:
+$$a_{jk}=\sum_{m=1}^{j-1}\ell_{jm}\cdot u_{mk}+u_{jk}\Longleftrightarrow u_{jk}=a_{jk}-\sum_{m=1}^{j-1}\ell_{jm}\cdot u_{mk}$$
+con $1\leq j\leq k$. Para calcular los términos de la matriz $L$ hacemos lo mismo:
+$$a_{jk}=\ell_{j1}\cdot u_{1k}+\ell_{j2}\cdot u_{2k}+\cdots+\ell_{jk}\cdot u_{kk}\Longleftrightarrow \ell_{jk}=\dfrac{1}{u_{kk}}\left(a_{jk}-\sum_{m=1}^k\ell_{jm}\cdot u_{mk}\right)$$
+donde $k+1\leq j\leq n$.
+\end{met}
+    \section{Factorización PA=LU}
+    \begin{obs}
+    Si en el proceso de factorización $LU$ alguno de los pivotes son nulos, podemos hacer una permutación de las ecuaciones (siendo el sistema resultante equivalente al inicial) para que el pivote sea distinto de cero. Nos aseguramos que encontraremos algún pivote no nulo ya que si no fuera así la matriz del sistema sería singular.
+    \end{obs}
+    \begin{ejem}
+    Véase el sistema 
+    $$\left\{ \begin{array}{l}
+        x_2+x_3=1\\x_1+x_2-x_3=0 \\ x_1-x_2+x_3=0
+    \end{array} \right.$$
+    claramente el primer pivote es 0, pero podemos entercambiarlas, teniéndose el sistema
+    $$\left\{ \begin{array}{l}
+       x_1+x_2-x_3=0 \\ x_2+x_3=1 \\ x_1-x_2+x_3=0
+    \end{array}\right.$$
+    lo que significa que hemos hecho un cambio de base en el espacio de llegada, que podemos ver en el siguiente diagrama 
+$$\begin{tikzcd}
+\mathbb R^{n}_{\{e_1,e_2,e_3\} } \arrow{r}{A}  \arrow[swap]{dr}{\overline{A}} & \mathbb R^{n}_{\{e_1,e_2,e_3\}}\\
+& \mathbb R^{n}_{\{\bar{e}_1,\bar{e}_2,\bar{e}_3\}} \arrow{u}[swap]{P_{12}}
+\end{tikzcd}$$
+donde $$P_{12}=\begin{pmatrix}
+    0 & 1 & 0 \\ 1 & 0 & 0 \\ 0 & 0 & 1
+\end{pmatrix}$$
+ya que es en lo que consiste cambiar dos vectores de la base. Este tipo de matrices  se llaman matrices de permutación (formadas al permutar alguna columna de la matriz identidad) y denotaremos $P_{ij}$ a la matriz $Id$ permutando la columna $i$ por la columna $j$ (que equivale a permutar los vectores $i$ y $j$ de la base). 
+
+Supongamos ahora, en general, que la matriz $A$ tiene $a_{11}=0$. Si $a_{i1} \neq 0$, entonces, la matriz $P_{1i}A$ tiene el primer pivote distinto de $0$ y podemos hacer eliminación gaussiana:
+$$P_{1i}A=L_1A^{(1)} \; \Rightarrow \; \underbrace{P_{1i} \cdot P_{1i}}_{Id} \cdot A=P_{1i} \cdot L_1 A^{(1)}$$
+porque siempre $P_{ij} \cdot P_{ij}=Id$ ya que son permutaciones de orden 2.
+
+Si repetimos el procedimiento $A=P_1 \cdot L_1 \cdot P_2 \cdot L_2 \cdot A^{(2)}$ con $P_1=P_{1i_1}$ y $P_2=P_{2i_2}$ con $i_1 \geq 1$ e $i_2 \geq 2$ y definimos $P_{jj}=Id$. Reiteramos el proceso hasta llegar a la matriz triangular superior
+$$A=P_1 \: L_1 \: P_2 \: L_2 \: \cdots \: P_{n-1} \: L_{n-1} \cdot U$$
+\end{ejem}
+\begin{lem}
+Sea $L_i$ una matriz triangular inferior con $1$'s en la diagonal principal  y cuya columna $j$-ésima (por debajo de la diagonal principal) es 
+$$\begin{pmatrix}
+    \ell_{(j+1)j} \\
+    \vdots \\
+    \ell_{nj}
+\end{pmatrix}$$ 
+y sea $P_{jk}$ con $i<j<k$. Entonces
+$$P_{jk}\cdot L_i\cdot P_{jk}=\bar{L}_i$$
+con $\bar{L}_{i}$ una matriz triangular inferior con $1$'s en la diagonal principal y con $\bar{\ell}_{mi}=\ell_{mi},\; \bar{\ell}_{ji}=\ell_{ki}, \; \bar{\ell}_{ki}=\ell_{ji}$.
+\end{lem}
+\begin{dem} Denotemos $P_{jk}=P_j$, y $P_j^{-1}=P_j$, con lo cual
+$$P_j^{-1} \: L_i \: P_j $$
+es la matriz de la aplicación lineal $L_i$ escrita en la base $\{\overline{e}_1, \ldots \: , \overline{e}_n\}$. Esto es, $\overline{e}_m=e_m$ y $\overline{e}_k=e_j$ y por tanto $\overline{e}_j=e_k$ con $m \neq j , k$. Observemos entonces  que
+$$L(\bar{e}_m)=L(e_m)=e_m\qquad (m\neq i)$$
+$$L(\bar{e}_i)=L(e_i)=e_i+\sum_{m=i+1}^n\ell_{mi}\cdot e_m=\bar{e}_i+\sum_{m=i+1}^{j-1}\ell_{mi}\cdot \bar{e}_m + \ell_{ji} \: \bar{e}_k + \sum_{m=j+1}^{k-1}\ell_{mi}\cdot \bar{e}_m + \ell_{ki} \bar{e}_j + \sum_{m=k+1}^{n}\ell_{mi}\cdot \bar{e}_m=  $$
+$$=\bar{e}_i+\sum_{m>i}\bar{\ell}_{mi}\bar{e}_m$$
+    con $\bar{\ell}_{mi}={\ell}_{mi}$ si $k \neq m \neq j$ y $\bar{\ell}_{ki}={\ell}_{ji}$, $\bar{\ell}_{ji}={\ell}_{ki}$ 
+  $$L(\bar{e}_j)=L(e_k)=e_k=\bar{e}_j$$
+  $$L(\bar{e}_k)=L(e_j)=e_j=\bar{e}_k$$
+\qed\end{dem}
+\begin{teo}
+    Con las notaciones precedentes, existe una matriz triangular inferior con 1's en la diagonal $L$ y una matriz de permutación $P$ tal que 
+    $$PA=LU$$
+    con $P=P_{n-1} \cdot P_{n-2} \: \cdots \: P_2 \cdot P_1$.
+\end{teo}
+\begin{dem}
+Como $A=P_1 \: L_1 \: P_2 \: L_2 \: \cdots \: P_{n-1} \: L_{n-1} \cdot U$, tenemos que
+$$PA=P(P_1 \: L_1 \: P_2 \: L_2 \: \cdots \: P_{n-1} \: L_{n-1} \cdot U)$$
+$$PA=(P_{n-1} \: P_{n-2} \: \cdots \: P_{2} \:P_1\:)(P_1 \: L_1 \: P_2 \: L_2 \: \cdots \: P_{n-1} \: L_{n-1} \cdot U) $$
+Calculemos entonces
+$$P_{n-1} \: P_{n-2} \: \cdots \: P_{2} \cdot \cancel{P_1\cdot P_1} \: L_1 \: P_2 \: L_2 \: \cdots \: P_{n-1} \: L_{n-1}=$$
+$$=\underbrace{P_{n-1} \: P_{n-2} \: \cdots \: P_{2} \: L_1 \: P_2 \:\textcolor{gray}{P_3 \cdots P_{n-1}}}_{\overline{{L}_1}} \textcolor{gray}{P_{n-1} \cdots P_3} L_2 \: \cdots \: P_{n-1} \: L_{n-1} = $$
+$$=\overline{L}_1 \underbrace{\textcolor{gray}{P_{n-1} \cdots P_3} L_2 P_3 L_3 P_3 \textcolor{gray}{P_4 \cdots P_{n-1}}}_{\overline{L}_2} \textcolor{gray}{P_{n-1} \cdots P_4} L_3 P_4 L_4 \: \cdots \: P_{n-1} L_{n-1}  $$
+
+Reiterando este proceso, obtenemos $\overline{L}_{1} \: \cdots \: \overline{L}_{n-1}=L$. Para ello basta con ir añadiendo sucesivamente  los términos en gris, que no son más que una manera muy rebuscada de escribir la matriz identidad.
+\qed\end{dem}
+\begin{ejem}
+ Sea 
+ $$A=\begin{pmatrix}
+     1&2&3\\0&-1&1\\ 1&-1&2
+ \end{pmatrix}$$
+ Aplicando el método anterior tenemos que
+ $$\begin{pmatrix}
+     1&2&3\\0&-1&1\\ 1&-1&2
+ \end{pmatrix}\underset{P_1=P_{13}}{\Longrightarrow}\begin{pmatrix}
+     1&-1&2\\0&-1&1\\ 1&2&3
+ \end{pmatrix}\underset{\ell_{31}=1}{\Longrightarrow}
+ \begin{pmatrix}
+     1&-1&2\\0&-1&1\\ 0&3&1
+ \end{pmatrix}\underset{P_2=P_{23}}{\Longrightarrow}\begin{pmatrix}
+     1&-1&2\\0&3&1\\ 0&-1&1
+ \end{pmatrix} $$
+ $$\underset{\ell_{33}=-\nicefrac{1}{3}}{\Longrightarrow} \begin{pmatrix}
+     1 & -1 & 2 \\ 0 & 3 & 1 \\ 0 & 0 & \nicefrac{4}{3} = U
+ \end{pmatrix}$$
+ Luego tenemos que
+ $$L=\overline{L}_1 \cdot \overline{L}_2=\begin{pmatrix}
+     1 & 0 & 0 \\ 1 & 1 & 0 \\ 0 & 0 & 1 
+ \end{pmatrix} \begin{pmatrix}
+     1 & 0 & 0 \\  0 & 1 & 0 \\ 0 & - \nicefrac{1}{3} & 1
+ \end{pmatrix}= \begin{pmatrix}
+     1 & 0 & 0 \\  1 & 1 & 0 \\ 0 & - \nicefrac{1}{3} & 1
+ \end{pmatrix}$$
+ y con lo cual
+ $$L\cdot U=\begin{pmatrix}
+      1 & 0 & 0 \\  1 & 1 & 0 \\ 0 & - \nicefrac{1}{3} & 1    
+ \end{pmatrix}\cdot\begin{pmatrix}
+ 1 & -1 & 2 \\ 0 & 3 & 1 \\ 0 & 0 & \nicefrac{4}{3}
+ \end{pmatrix}=\begin{pmatrix}
+    1&-1&2\\1& 2& 3\\0&-1&1
+ \end{pmatrix}$$
+ Si consideramos ahora el siguiente sistema $$Ax=\begin{pmatrix}
+     1 \\ 2 \\ 3
+ \end{pmatrix} \iff PAx=P\begin{pmatrix}
+     1 \\ 2 \\ 3
+ \end{pmatrix} \iff LUx=\begin{pmatrix}
+     3 \\ 1 \\ 2
+ \end{pmatrix} $$
+\end{ejem}
+
+\section{Factorización de Cholesky}
+\begin{prop}
+Sea $A$ una matriz definido positiva y simétrica. Entonces $A$ se puede escribir (de manera única) como
+$$A=U^t\cdot U$$
+donde  $U$ es una matriz triangular superior.
+\end{prop}
+\begin{dem}
+Por ser $A$ definido positiva, sabemos que es factorizable $LU$. Sea 
+$$U''=\begin{pmatrix}
+    u_{11}&u_{12}&u_{13}&\cdots &u_{1n}\\
+    0&u_{22}&u_{23}&\cdots &u_{2n}\\
+    0 & 0&u_{33}&\cdots&u_{3n}\\
+    \vdots&\vdots &\vdots&\ddots&\vdots \\
+    0&0 &0&\cdots&u_{nn}
+\end{pmatrix}$$
+Observemos entonces que
+$$U''=\begin{pmatrix}
+    u_{11}&0&0&\cdots &0\\
+    0&u_{22}&0&\cdots &0\\
+    0 & 0&u_{33}&\cdots&0\\
+    \vdots&\vdots &\vdots&\ddots&\vdots \\
+    0&0 &0&\cdots&u_{nn}
+    \end{pmatrix}\begin{pmatrix}
+    1 & \nicefrac{u_{12}}{u_{11}}& \nicefrac{u_{13}}{u_{11}} &\cdots & \nicefrac{u_{12}}{u_{11}}\\
+    0&1 &\nicefrac{u_{23}}{u_{22}}&\cdots &\nicefrac{u_{2n}}{u_{22}}\\
+    \vdots & 0&1&\cdots&\nicefrac{u_{3n}}{u_{33}}\\
+    \vdots&\vdots &\vdots&\ddots&\vdots \\
+    0&0 &0&\cdots&1
+\end{pmatrix}=D\cdot U'$$
+De manera que toda matriz $A$ factorizable $LU$ se puede escribir (de manera única) como
+$$A=L\cdot D\cdot U'$$
+donde $L$ y $U'$ son matrices triangulares unitarias inferior y superior respectivamente y $D$ es una matriz diagonal. Si trasponemos la igualdad anterior obtenemos lo siguiente:
+$$A^t=U'\,^t D^t L^t=U'^t D L^t$$
+Como $A$ es simétrica se tiene que $A=A^t$, luego por la unicidad de la factorización $LU$ necesariamente $L=U'\,^t$ 
+y, por tanto, la factorización es 
+$$ \; A=U'\,^t \: D \: U' \; $$
+Además, como $A$ es definido positiva, los valores propios de $D$ (los pivotes) son todos positivos, entonces
+$$D=\begin{pmatrix}
+    u_{11}&0&0&\cdots &0\\
+    0&u_{22}&0&\cdots &0\\
+    \vdots & 0&u_{33}&\cdots&0\\
+    \vdots&\vdots &\vdots&\ddots&\vdots \\
+    0&0 &0&\cdots&u_{nn}
+    \end{pmatrix}=\begin{pmatrix}
+    \sqrt{u_{11}}&0&0&\cdots &0\\
+    0&\sqrt{u_{22}}&0&\cdots &0\\
+    \vdots & 0&\sqrt{u_{33}}&\cdots&0\\
+    \vdots&\vdots &\vdots&\ddots&\vdots \\
+    0&0 &0&\cdots&\sqrt{u_{nn}}
+    \end{pmatrix}\begin{pmatrix}
+    \sqrt{u_{11}}&0&0&\cdots &0\\
+    0&\sqrt{u_{22}}&0&\cdots &0\\
+    \vdots & 0&\sqrt{u_{33}}&\cdots&0\\
+    \vdots&\vdots &\vdots&\ddots&\vdots \\
+    0&0 &0&\cdots&\sqrt{u_{nn}}
+    \end{pmatrix}$$
+    $$=\sqrt{D} \cdot \sqrt{D}$$
+    y con lo cual
+    $$A=U'\,^t \sqrt{D} \sqrt{D} U' = \left(\sqrt{D} U'\right)^t \: \left(\sqrt{D} U'\right)=U^t \cdot U$$
+    donde $U$ es una matriz triangular superior.
+    \qed\end{dem}
+\begin{obs}
+Si denotamos por $U_i$ a las columnas de $U$, las ecuaciones que determinan la matriz $U$ son las siguientes:
+    $$a_{ij}=(\text{Fila} \; i \; U^t)(\text{Columna} \; j \;U)=(\text{Columna} \; i \; U)^t (\text{Columna} \; j \;U)=U_i \cdot U_j$$
+siendo $\cdot$ el producto escalar de vectores. Esto nos dice que la matriz $A$ es la matriz de la métrica euclídea en las bases $U_1,\ldots, U_n$.
+
+Como $U$ es una matriz triangular superior, tiene exactamente $\sum_{i=1}^ni=\dfrac{n(n+1)}{2}$ términos no triviales, luego en vez de tener un sistema de $n^2$ incógnitas (como en el método de Crout) tenemos uno de $\dfrac{n(n+1)}{2}$ incógnitas. Esta es la consecuencia de suponer que la matriz $A$ es simétrica, ya que reducimos la dimensión del espacio en el que estamos trabajando.
+\end{obs}
+ 
+\begin{met}[\textbf{de Cholesky}] Resolveremos las ecuaciones $a_{ij}=U_i \cdot U_j \; \forall j=i, i+1, \ldots, n$ de manera sistemática. Calculemos las dos primeras filas de $U$:
+
+\underline{$i=1$}
+$$a_{11}=U_1\cdot U_1=\begin{pmatrix}
+    u_{11}&0&\cdots &0
+\end{pmatrix}\cdot \begin{pmatrix}
+    u_{11}\\
+    0\\
+    \vdots\\
+    0
+\end{pmatrix}$$
+luego $u_{11}=\sqrt{a_{11}}$. Para $j>1$ tenemos que
+$$U_{1} \cdot U_j=u_{11} \cdot u_{1j}=a_{1j} \; \Rightarrow \; u_{1j}=\dfrac{a_{1j}}{u_{11}}$$
+
+\underline{$i=2$}
+$$a_{22}=U_2 \cdot U_2=u_{12}^2+u^2_{22}=a_{22} \; \Rightarrow \; u_{22}=\sqrt{a_{22}-u_{12}^2}$$
+para $j>2$ se tiene que
+$$U_2 \cdot U_j=u_{12} u_{1j} + u_{22} u_{2j}=a_{2j}$$
+luego $$u_{2j}=\dfrac{1}{u_{22}}(a_{2j}-u_{12}u_{1j})$$
+En general, supuestas calculadas las filas $1,\ldots, i-1$ de $U$,
+$$U_i \cdot U_i = \sum_{k=1}^i u_{ki}^2=a_{ii}$$
+y, por tanto, 
+$$u_{ii}^2=a_{ii}- \sum_{k=1}^{i-1} u_{ki}^2 \; \Rightarrow \; u_{ii}=\sqrt{a_{ii}- \sum_{k=1}^{i-1} u_{ki}^2}$$
+y para $j > i$
+$$a_{ij}=U_i \cdot U_j=\sum_{k=1}^iu_{ki}\cdot u_{kj}=\sum_{k=1}^{i-1}u_{ki}\cdot u_{kj}+u_{ii}\cdot u_{ij}$$
+luego el método en general es
+\begin{align}
+u_{ij}=\dfrac{1}{u_{ii}}\left(a_{ij}-\sum_{k=1}^{i-1}u_{ki}\cdot u_{kj}\right) 
+\label{met:chol}
+\end{align}
+\end{met}
+\begin{ejem}
+Calculemos la factorización $A=U\cdot U^t$ por el método de Cholesky donde $A$ es la siguiente matriz simétrica y definido positiva:
+$$A=\begin{pmatrix}
+    2&1&1\\
+    1&6&4\\
+    1&4&5
+\end{pmatrix}=U^t U$$
+\underline{$i=1$}
+$$u_{11}=\sqrt{2} \qquad u_{1j}=\dfrac{a_{ij}}{u_{11}}=\dfrac{1}{\sqrt{2}}$$
+
+\noindent\underline{$i=2$}
+$$u_{22}=\sqrt{a_{22}-u_{12}^2}=\sqrt{6-\nicefrac{1}{2}}=\sqrt{\nicefrac{11}{2}} \qquad u_{23}=\dfrac{1}{u_{22}}(a_{23}-u_{12}\cdot u_{13}=\sqrt{\dfrac{2}{11}}(4-\dfrac{1}{4})=\sqrt{\dfrac{2}{11}}\cdot \dfrac{7}{2}$$
+
+\noindent\underline{$i=3$}
+$$u_{33}=\sqrt{a_{33}-u_{13}^2-u_{23}^2} = \sqrt{5 - \nicefrac{1}{2}-\nicefrac{49}{22}}=\dfrac{5\sqrt{11}}{11}$$
+Por tanto la matriz es 
+$$U=\begin{pmatrix}
+\sqrt{2}&\nicefrac{1}{\sqrt{2}}&\nicefrac{1}{\sqrt{2}} \\
+0& \sqrt{\nicefrac{11}{2}} & \sqrt{\nicefrac{49}{22}}\\
+0&0&\nicefrac{\sqrt{275}}{11}
+\end{pmatrix}$$
+\end{ejem}
+    \section{Estudio de los errores en $\mathbb{R}^n$}
+
+
+    \begin{defin}
+        Una \textbf{norma} en un espacio vectorial $E$ es una aplicación
+        $$\begin{array}{rrcl}
+             \|\cdot \| : & E & \longrightarrow & \mathbb R   \\
+              \: & e & \longmapsto & \|e\| 
+        \end{array}$$
+        verificando las siguientes condiciones: \vspace{-5mm}
+        \begin{itemize}
+         \item[a)] $\|e\|>0\;\forall e\neq 0$
+         \item[b)]$\|\lambda e\|=|\lambda|\cdot \|e\|\;\forall \lambda\in \mathbb{R}$
+         \item[c)]$\|e+\bar{e}\|\leq \|e\|+\|\bar{e}\|\;\forall e,\bar{e}\in E$
+        \end{itemize}
+    \end{defin}
+    \begin{ejem}
+    Si $g$ es un producto escalar en $E$, podemos definir 
+        $$\|e\|=\sqrt{g(e,e)}$$
+Si $E = \mathbb R^n$, $g$ es producto escalar euclídeo estándar 
+$$\|(x_1, \:\ldots, \: x_n)\|=\left( \sum_{i_1}^{n} x_i^2\right)^{\nicefrac{1}{2}}$$
+    \end{ejem}
+    \begin{obs}
+        Usaremos 3 normas en $\mathbb R^n$: 
+        \begin{enumerate}
+            \item $\displaystyle \|(x_1, \: \ldots,  \: x_n)\|_1= \sum_{i=1}^{n} |x_i| $
+            \item $\displaystyle \|(x_1, \: \ldots, \: x_n)\|_2=\left( \sum_{i=1}^{n} x_i^2\right)^{\nicefrac{1}{2}}$ que es la norma eucídea. 
+            \item $\displaystyle \|(x_1, \: \ldots, \: x_n)\|_{\infty}=\max_{1 \leq i \leq n}|x_i|=\lim_{p \to \infty} \|x\|_p = \lim_{p \to \infty} \left( \sum_{i=1}^{n} x_i^p\right)^{\nicefrac{1}{p}} $
+        \end{enumerate}
+    \end{obs}
+    
+    \begin{defin}
+    Sean $(E,\|\cdot \|_E)$ y $(F,\|\cdot\|_F)$ dos espacios vectoriales normados. En el espacio vectorial $Hom_{\mathbb R}(E,F)$ podemos definir una \textbf{norma subordinada} a $\|\cdot\|_E$ y $\|\cdot\|_F$ tal que dada $f:E \longrightarrow F$, 
+    $$\|f\|_{E,F}=\sup_{e \neq 0} \dfrac{\|f(e)\|_{F}}{\|e\|_{E}}$$
+    Veamos que efectivamente es una norma: \vspace{-5mm}
+    \begin{itemize}
+    \item[a)] Como $\|f(e)\|_F >0$ y $\|e\|_E>0$ para cualquier $e$, su cociente también lo será (y por tanto el supremo).
+    \item[b)] Dado $\lambda\in \mathbb{R}$:
+    $$\|\lambda f\|_{E,F}=\sup_{e \neq 0} \dfrac{\|\lambda f(e)\|_{F}}{\|e\|_{E}}=|\lambda| \sup_{e \neq 0} \dfrac{\|f(e)\|_{F}}{\|e\|_{E}}=|\lambda|\cdot \|f\|_{E,F}$$
+    \item[c)] Tenemos que
+    $$\|f+g\|_{E,F}=\sup_{e \neq 0} \dfrac{\|f(e)+g(e)\|_{F}}{\|e\|_{E}} \leq \sup_{e \neq 0} \dfrac{\|f(e)\|_{F}}{\|e\|_{E}}+\sup_{e \neq 0} \dfrac{\|g(e)\|_{F}}{\|e\|_{E}}=\|f\|_{E,F}+\|g\|_{E,F}$$
+    \end{itemize}
+    \end{defin}
+    
+    \begin{obs}
+        Véanse las siguientes observaciones:
+        \begin{enumerate}
+             \item En general, la norma de una aplicación lineal se puede expresar como sigue: 
+            $$\|A\|=\sup_{x \neq 0} \dfrac{\|Ax\|}{\|x\|}=\sup_{x \neq 0} \left\|A\left(\frac{x}{\|x\|}\right)\right\|=\sup_{\|y\| =1} \|Ay\|\displaystyle$$ habiendo hecho el cambio de variable $y=\frac{x}{\|x\|}$.
+            \item Como $\|A\|=\sup_{x \neq 0} \dfrac{\|Ax\|}{\|x\|} \displaystyle$, sabemos que
+            $$\dfrac{\|Ax\|}{\|x\|}\leq \|A\|\Longleftrightarrow\|Ax\|\leq \|A\|\cdot \|x\|$$
+            \item Si $\|Ax\|\leq M \|x\| \; \forall x \in \mathbb R^n$, entonces $\|A\|\leq M$.
+            \item Dadas dos aplicaciones lineales $A,B$ se tiene que
+            $$\|(AB)x\|=\|A(Bx)\|\leq \|A\|\cdot \|Bx\|\leq \|A\|\cdot\|B\|\cdot \|x\|$$
+            para cualquier $x$, luego se verifica que
+            $\|A\cdot B \| \leq \|A\|\cdot \|B\|$.
+            \item Sea $x$ un vector propio de $A$ con valor propio $\lambda$, entonces
+            $$\|Ax\|=\|\lambda x\|=|\lambda|\cdot \|x\|$$
+            luego $\|A\|\geq |\lambda|$ y por tanto $\|A\|\geq \max\{\lambda_i\}$, siendo $\lambda_i$ los autovalores de $A$.    
+        \end{enumerate}
+    \end{obs}
+    \begin{ejem}
+    Veamos las normas para matrices subordinadas a las normas expuestas anteriormente:
+    \begin{enumerate}
+        \item $\|\cdot\|_1$
+
+        Recordemos que para $x \in \mathbb R^n$, $$\|x\|_1=\sum_{i=1}^n |x_i|$$
+        entonces
+        $$\|Ax\|_1=\sum_{i=1}^n |(Ax)_i|=\sum_{i=1}^n \left|\sum_{j=1}^n a_{ij} x_j \right|\leq \sum_{i=1}^n \sum_{j=1}^n |a_{ij}| |x_j| =\sum_{j=1}^n \left(\sum_{i=1}^n |a_{ij}|\right) |x_j| \leq \sum_{j=1}^n M_1 |x_j| =$$$$=M_1\sum_{j=1}^n |x_j|=M_1\|x\|_1$$
+        con $\displaystyle M_1=\max_{1\leq j\leq n}\sum_{i=1}^n|a_{ij}|$, concluyendo entonces que
+        $$\|A\|_1\leq M_1$$
+        Si encontramos un vector $x \in \mathbb R^n$ tal que $\|x\|_1=1$ , entonces
+        $$\|Ax\|=M_1 \leq \|A\|$$
+        Sea $j$ un índice tal que $\displaystyle M_1=\sum_{i=1}^n |a_{ij}|$ y sea $x=e_j$ el vector $j$-ésimo de la base canónica, entonces $Ax$ es precisamente la columna $j$ de $A$, por tanto
+        $$\|Ax\|=\sum_{i=1}^n|a_{ij}|=M_1$$
+         \item $\|\cdot\|_2$
+
+        Al igual que antes, vamos a calcular $\|Ax\|_2$. Por ser
+        \begin{equation} \label{eq:2.1}
+            (\|Ax\|_2)^2=(Ax)\cdot (Ax)=x^tA^tAx=x^tSx
+        \end{equation}
+        Además, $S=A^tA$ será una matriz simétrica ya que
+        $$S^t=(A^tA)^t=A^t(A^t)^t=A^tA$$
+        y por el Teorema de Inercia de Sylvester, toda matriz simétrica diagonaliza en una base ortonormal.
+
+        Veamos en primer lugar que los autovalores de $S$ son todos reales. Sea $\lambda$ un valor propio de $S$ complejo y $v\in\mathbb{R}^n$ su respectivo vector propio. Podemos escribir entonces $v=u_1+iu_2$ para ciertos $u_1,u_2\in\mathbb{R}^n$. Se tiene entonces que
+        $$Sv=\lambda v\Rightarrow S(u_1+iu_2)=(a+bi)(u_1+iu_2)$$
+        $$Su_1+iSu_2=(au_1-bu_2)+i(bu_1+au_2)$$
+        Igualando la parte real e imaginaria de ambos miembros podemos concluir que
+        $$Su_1=au_1-bu_2$$
+        $$Su_2=bu_1+bu_2$$
+        Si consideramos ahora el vector $\bar{v}=u_1-iu_2$ tenemos que
+        $$S\bar{v}=Su_1-iSu_2=au_1-bu_2-aiu_2-biu_1=a(u_1-iu_2)-bi(u_1-iu_2)=\bar{\lambda}\bar{v}$$
+        Y por tanto $\bar{\lambda}$ es también un autovalor de $A$. Cualquier vector de autovalor $\lambda$ ó  $\bar{\lambda}$ será un elemento de $Ker\,(S-\lambda)(S-\overline{\lambda})$. Sea $e$ un vector no nulo de $Ker\,(S-\lambda)(S-\overline{\lambda})$, observemos entonces que
+        $$(S-\lambda Id)\cdot (S-\bar{\lambda}Id)=S^2-(\lambda+\bar{\lambda})S+\lambda\cdot\bar{\lambda}Id=S^2-2aS+b^2Id=(S-aId)^2+(b^2-a^2)Id=$$
+        $$=(S-aId)^2+c^2Id$$
+        luego $(S-aId)^2\cdot e=-c^2\cdot e$. Si multiplicamos por $e^t$ en ambos miembros:
+        $$e^t(S-a)^2e=e^t(S-a)^t(S-a)e>0$$
+        Sin embargo 
+        $$e^t(S-a)^2e=-c^2 e\cdot e <0$$
+        llegando a una contradicción. Por lo tanto no existe ningún vector $e$ no nulo en $Ker\,(S-\lambda)(S-\overline{\lambda})$, demostrando así que todos los valores propios son reales.
+
+        Veamos ahora que vectores propios de valores propios diferentes son ortogonales. Si tenemos dos valores propios reales, tenemos dos vectores propios diferentes. Sean $\lambda_1$ y $\lambda_2$ los valores propios reales de los vectores propios $x_1$ $x_2$, entonces
+        $$Sx_1=\lambda_1x_1\Rightarrow x_2^t S x_1 = \lambda x_2^tx_1$$
+        $$Sx_2=\lambda_2x_2 \Rightarrow x_1^t Sx_2=\lambda_2x_1^t x_2$$
+        y restando se deduce que $(\lambda_1-\lambda_2)x_1^tx_2=0$, y por tanto $x_1$ y $x_2$ son ortogonales.
+        %Sea ahora $e$ un vector tal que $\ker (S-\lambda Id)^2$ y $e\nin \ker (S-\lambda Id)$, entonces
+       % $$(S-\lambda Id)^2 e=0$$
+        %$$e^t(S-\lambda Id)^t(S-\lambda Id)e=0$$
+        %y con lo cual
+        %$$(S-\lambda Id)e=0$$
+        %lo cual contradice lo supuesto.    
+        Así pues,  $S=A^t A$ tiene todos los valores propios reales y si $\lambda$ es un valor propio, entonces un vector propio $e$ ($Se=\lambda e$) verifica que $e^tA^tAe=\lambda e^te $ y como $e^tA^tAe=(Ae)\cdot (Ae)$, $e^tA^tAe>0$, concluyendo entonces que $\lambda>0$.
+
+        Sabemos que todo $x \in \mathbb{R}$ se puede expresar como $\displaystyle x=\sum_{i=1}^n\alpha_i\cdot v_i$ con $\alpha_i\in \mathbb{R}$, siendo $\{v_1,\ldots,v_n\}$ una base ortonormal de valores propios. Continuando en la ecuación (\ref{eq:2.1}):
+        $$(\|Ax\|_2)^2=x^tSx=x^t\left(\sum_{i=1}^n\alpha_i\cdot Sv_i\right)=x^t\left(\sum_{i=1}^n\alpha_i\lambda_i\cdot v_i)\right)=\sum_{j=1}^n\sum_{i=1}^n\alpha_j\alpha_i\lambda_i v_j\cdot v_i=\sum_{i=1}^n\alpha_i^2\cdot \lambda_i\leq $$
+        $$\leq (\|x\|_2^2\cdot \max_{1\leq i\leq n}|\lambda_i|=(\|x\|_2)^2\cdot \rho(S)$$
+        Y por lo tanto
+        $$\|Ax\|_2\leq \sqrt{\rho(A^tA)}\|x\|_2=M_2\|x\|_2$$
+        Por último, sea $x$ un vector propio de $S$ de norma $1$ y valor propio $\lambda=\rho(S)$, entonces:
+        $$(\|Ax\|_2)^2=x^tSx=x^t\lambda x=\lambda x^tx=\lambda$$
+        y con lo cual
+        $$\|Ax\|_2=\sqrt{\rho(S)}=M_{2}$$
+
+        \item $\|\cdot \|_{\infty}$
+        
+        Recordemos que 
+        $$\|x\|_{\infty}=\max_{1\leq i\leq n}|x_i|$$
+        Al igual que antes, observemos que
+        $$(Ax)_i=\sum_{j=1}^n a_{ij} x_j$$
+        y, por tanto
+        $$|(Ax)_i|=\left|\sum_{j=1}^na_{ij} x_j\right|\leq \sum_{j=1}^n|a_{ij}| |x_j|\leq \sum_{j=1}^n|a_{ij}|\|x\|_{\infty}\leq M_{\infty}\cdot \|x\|_{\infty}$$
+        donde $ \displaystyle M_{\infty}=\max_{1 \leq i \leq n} \sum_{j=1}^n|a_{ij}|$ y tenderemos que 
+        $$\|Ax\|_{\infty} \leq M_{\infty} \|x\|_{\infty}$$
+        Para concluir, veamos que existe un vector $x$ tal que $\|x\|_{\infty}=1$ y con $\|Ax\|_{\infty}=M_{\infty}$. Sea $i$ un índice tal que $M_{\infty}=\sum_{j=1}^n|a_{ij}|$ y sea $x=(x_1,\ldots,x_n)$ con 
+        $$x_j=sign\, a_{ij}=\begin{cases}
+            \: 1 \text{ si } a_{ij}>0 \\
+            \: 0 \text{ si } a_{ij}=0 \\
+            \: -1 \text{ si } a_{ij}<0 
+        \end{cases}$$
+        Se tiene entonces que
+        $$(Ax)_{i}=\sum_{j=1}^na_{ij} x_j = \sum_{j=1}^na_{ij} \: sign(a_{ij})=\sum_{j=1}^n|a_{ij}|=M_{\infty}$$
+        y $\|x\|=\max_{1\leq i\leq n}|sign\,(a_{ij})|=1$
+
+       
+    \end{enumerate}
+    \end{ejem}
+    \begin{defin}
+    Llamaremos \textbf{radio espectral} de la matriz $A$ al valor
+    \begin{align}
+      \rho(A)=\max_{1 \leq i \leq n}\{|\lambda_i|\}
+      \label{radio}
+    \end{align}
+    siendo $\lambda_i$ los autovalores de $A$, ya que el espectro de una matriz es el conjunto de todos sus valores propios $\{\lambda_1, \ldots, \lambda_n\}$
+    \end{defin}
+    \begin{obs}
+    Además, dado $\varepsilon>0$ existe una norma $\|\cdot\|_{A, \varepsilon}$ tal que 
+    $$\|A\|_{A, \varepsilon} < \rho(A)+\varepsilon$$
+    es decir, no ``cabe'' nada entre $\rho(A)$ y esa norma.
+    \end{obs}
+    
+    \subsection{Estudio del error en sistemas de ecuaciones lineales}
+    \begin{defin}
+    Sea $x_a$ una aproximación a la solución del sistema $Ax=b$. Llamaremos \textbf{residuo} de $x_a$ al valor
+    \begin{align}
+     r(x_a)=Ax_a-b
+     \label{resi}
+    \end{align}
+    \end{defin}
+    \begin{prop}
+     Sea $Ax=b$ un sistema de ecuaciones lineal con $|A|\neq 0$ y $x^*=A^{-1}b$ una solución. Si $x_a$ es una aproximación de la solución $x^*$ entonces una cota del error (relativo) es
+    $$\dfrac{\|x_a-x^*\|}{\|x^*\|}\leq\|A\|\cdot \|A^{-1}\|\cdot \dfrac{\|r(x_a)\|}{\|b\|}  $$    
+    \end{prop}
+    \begin{dem}
+    Si multiplicamos el error absoluto por $A$, tenemos que
+    $$A(x_a-x^*)=Ax_a-Ax^*=Ax_a-b=r(x_a)$$
+    De esta forma
+    $$\|x_a-x^*\|=\|A^{-1} \cdot A(x_a-x^*)\|\leq \|A^{-1}r(x_a)\| \leq \|A^{-1}\| \|r(x_a)\|$$
+    habiendo acotado así el numerador. Para el denominador, consideramos
+    $$\|b\|=\|Ax^*\|\leq \|A\| \cdot \|x^*\| \; \Rightarrow \; \dfrac{1}{\|x^*\|}\leq \dfrac{\|A\|}{\|b\|}$$
+    entonces, uniendo ambas acotaciones, el error relativo se acota como 
+    $$\dfrac{\|x_a-x^*\|}{\|x^*\|}  \leq \|A\|\cdot \|A^{-1}\|\cdot \dfrac{\|r(x_a)\|}{\|b\|}$$
+    \qed\end{dem}
+    
+    \begin{defin}
+    Denominaremos \textbf{número de condición o condición} de una matriz $A$ a la cantidad
+    \begin{align}
+         cond(A)=\|A^{-1}\|\cdot \|A\|
+         \label{num:cond}
+    \end{align}
+    Este número determinará lo sensible que es el sistema de ecuaciones a las aproximaciones. Una matriz con número de condición pequeño  se comportará ``bien'' al aproximar las soluciones del sistema de ecuaciones asociado a dicha matriz.
+    \end{defin}
+    \begin{prop}
+        El número de condición de una matriz verifica $cond(A) \geq 1$.
+    \end{prop}
+    \begin{dem} $1=\|Id\|=\|A\cdot A^{-1}\|\leq \|A^{-1}\|\cdot \|A\|=cond(A)$
+    \qed\end{dem}
+    
+    \section{Métodos iterativos}
+    \begin{defin} Sea $\{x^{(k)}\}_{k \in \mathbb N}$ una sucesión en $\mathbb R^n$. Se dice que $\{x^{(k)}\}$ \textbf{converge} o que es convergente cuando exista $x^*\in \mathbb R^n$ tal que 
+    $$\lim_{k \to \infty} \|x^{(k)}-x^*\| = 0$$
+    siendo $\|\cdot\|$ una norma en $\mathbb R^n$. 
+    \end{defin}
+    \begin{obs}
+        Dado que todas las normas son equivalentes en $\mathbb R^n$, aseguramos la convergencia para cualquier norma si converge en alguna.
+    \end{obs}
+     \begin{defin}
+       Sea $x^*$ la solución de un sistema de ecuaciones $Ax=b$. Diremos que un \textbf{método es convergente} cuando la sucesión $\{x^{(k)}\}$ converja a $x^*$ para todo $x^{(0)} \in \mathbb R^n$.
+    \end{defin}
+    \begin{met}[\textbf{iterativo general}]
+        Dado el sistema $Ax=b$, lo podemos transformar de la siguiente forma. Dada una matriz invertible $Q$, observemos que
+        $$Qx^*=Qx^*-Ax^*+b$$
+        de manera que podemos definir la sucesión 
+        \begin{align}
+        x^{(k+1)}=Q^{-1}(Q-A)x^{(k)}+Q^{-1}b
+        \label{met:it}
+        \end{align}
+        que va a ser nuestro método iterativo. Si escribimos el método como 
+        $$x^{(k+1)}=Mx^{(k)}+c$$
+        con
+        $$M=Q^{-1}(Q-A)=I-Q^{-1}A$$
+        $$c=Q^{-1}b$$
+        vemos claramente que el problema consiste en hallar el punto fijo de la transformación afín
+        $$\begin{array}{rrcl}
+             f: & \mathbb R^n & \longrightarrow & \mathbb R^n  \\
+             & x & \longmapsto & Mx+c 
+        \end{array}$$
+        Las iteraciones por tanto son:
+        $$x^{(1)}=f(x^{(0)})=Mx^{(0)}+c$$
+        $$x^{(2)}=f(x^{(1)})=Mx^{(1)}+c=M(Mx^{(0)}+c)=M^2x^{(0)}+(Mc-c)$$
+        $$x^{(3)}=M^3x^{(0)}+\sum_{i=0}^3 M^ic$$
+        y en general, 
+        $$x^{(k+1)}=M^{k+1}x^{(0)}+\sum_{i=0}^k M^i c$$
+
+        Para que la sucesión anterior converja a $x^*$ tiene que desaparecer el término $M^{(k+1)}x^{(0)}$ y la serie tiene que converger a $x^*$. Como veremos en el siguiente lema, si suponemos que $$\|M\|<1$$ tenemos que
+        $$\sum_{i=0}^{\infty}M^ic=(I-M)^{-1}c$$
+        y además
+        $$\lim_{k\to\infty}M^{k+1}x^{(0)}\leq \lim_{k\to\infty}\|M^{k+1}x^{(0)}\|=\lim_{k\to\infty}\|M\|^{k+1}x^{(0)}=0 $$
+        Utilizando esto podemos concluir que el método converge a $x^*$ para cualquier $x^{(0)}$ ya que
+        $$\lim_{k\to\infty}x^{(k+1)}=\lim_{k\to\infty} M^{k+1}x^{(0)}+\sum_{i=0}^k M^i c=\sum_{i=0}^{\infty}M^ic= $$
+        $$=(I-M)^{-1}c=(I-I+Q^{-1}A)^{-1}Q^{-1}b=A^{-1}QQ^{-1}b=A^{-1}b=x^*$$
+         \end{met}
+    \begin{obs}        
+        Queremos que $Q$ sea fácilmente invertible, así que en la práctica haremos que sea sencilla, triangular, tridiagonal, etc. Además, la sucesión deberá ser convergente  para todo $x^{(0)}$. Diferentes elecciones de $Q$ nos dan diferentes métodos.
+      
+    \end{obs}
+    \begin{lem} Sea $M$ una matriz tal que $\|M\| < 1$. Entonces la matriz $I-M$ es invertible y la serie 
+    $$\sum_{i=0}^{\infty} M^i c$$
+    converge a $(I-M)^{-1}c$. Estas series se llaman series de Neumann
+    \end{lem}
+    \begin{dem}
+        Tenemos que $I-M$ es invertible. Si no lo fuera, existiría $x \neq 0$, de forma que $x \in \ker (I-M)$. Pero 
+        $$0=(I-M)x=x-Mx \iff Mx=x \iff 1 \text{ es valor propio}$$
+        y como es un valor propio real positivo, $\rho(M) > 1$. Por la hipótesis $\|M\|<1$ llegamos a una contradicción ya que
+        $$\|Mx\|\leq \|M\|\cdot \|x\|$$
+        $$\|Mx\|=|\lambda|\cdot \|x\|\leq \rho(M)\cdot \|x\|$$
+        por tanto $\rho(M)\leq \|M\|<1$, demostrando así que es invertible.
+
+        Tomemos ahora la suma parcial
+        $$\sum_{i=0}^{k} M^i c$$
+        y apliquémosle $I-M$:
+        $$(I-M)\left(\sum_{i=0}^{k} M^i c \right)= \sum_{i=0}^{k} M^i c - \sum_{i=0}^{k} M^{i+1} c=c-M^{k+1}c $$
+        por ser una serie telescópica. Veamos que $\{M^{k+1}c\}$ converge a $0$, es decir, 
+        $$\lim_{k\to \infty} \|M^{k+1}c\|=0$$
+        Como por las propiedades de normas $\|M^{k+1}c\|\leq \|M^{k+1}\|\cdot \|c\| \leq \|M\|^{k+1} \cdot \|c\|$. Además 
+        $\|M\|<1$ por hipótesis, entonces $\displaystyle \lim_{k \to \infty} \|M\|^k=0$ de forma que
+        $$\lim_{k\to \infty} \|M^{k+1}c\| \leq \lim_{k\to \infty}\|M\|^{k+1} \cdot \|c\| = 0$$
+        y por tanto, 
+        $$\lim_{k\to\infty}(I-M)\sum_{i=0}^{k} M^i c = c $$
+        Es decir, $$\sum_{i=0}^{\infty} M^i c = (I-M)^{-1} c$$
+    \qed\end{dem}
+    \begin{obs}
+        La hipótesis de la norma que hemos puesto para $M$, $\|M\|<1$, es equivalente a que la transformación sea contractiva, es decir,
+        $$f(x)-f(y)=Mx+c-(My+c)=M(x-y)$$
+    \end{obs}
+    \begin{teo} El método iterativo dado por 
+    $$x^{(k+1)}=M x^{(k)} + c$$
+    con $M=Q^{-1}(Q-A)$ y $c=Q^{-1}b$ converge si y solo si $\rho(M)<1$.
+    \end{teo}
+    \begin{dem}
+        Supongamos que el radio espectral de $M$, $\rho(M)$, es menor que 1. Veamos entonces que existe una norma una norma $\|\cdot\|$ tal que $\|M\|<1$.  Sea $\varepsilon = \frac{1 - \rho(M)}{2}$, sabemos que existe una norma tal que
+        $$\|M\| \leq \rho(M)+ \varepsilon =\rho(M) + \frac{1 - \rho(M)}{2} = \dfrac{1}{2} (1+\rho(M))<1$$
+        Para esa norma, tenemos que la sucesión $\{x^{(k)}\}$ definida por 
+        $$x^{(k+1)}=M x^{(k)} + c=M^{k+1}x^{(0)} + \sum_{i=0}^{\infty} M^i c$$
+        que converge a $(I-M)^{-1}c=x^*$. En efecto:
+        $$\|x^{(k+1)} - (I-M)^{-1}c\|= \left\| M^{k+1}x^{(0)} + \sum_{i=0}^{\infty} M^i c - (I-M)^{-1}c \right\| \leq \|M^{k+1}x^{(0)}\| + \left\| \sum_{i=0}^{\infty} M^i c - (I-M)^{-1}c \right\|$$
+        pero 
+        $$\displaystyle \lim_{k \to \infty} \|M^{k+1}x^{(0)}\| \leq \lim_{k \to \infty} \|M^{k+1}\|\|x^{(0)}\|=0$$
+        $$\lim_{k \to \infty} \left\| \sum_{i=0}^{\infty} M^i c - (I-M)^{-1}c \right\| = 0$$
+        por el lema anterior.
+
+        Recíprocamente, supongamos por reducción al absurdo que $\rho(M) \geq 1$ y veamos que el método no puede converge a $x^*$ para cualquier $x^{(0)}$ que tomemos. Sea $x$ un vector  propio de valor propio $\lambda$ con $|\lambda|>1$. Tomemos como $x^{(0)}=x$ y $\bar{x}^{(0)}=0$, así $\{x^{(k)}\}$ y $\{\bar{x}^{(k)}\}$ son dos sucesiones con el mismo límite, $x^*$ y, por tanto, $x^{(k)}- \bar{x}^{(k)}$ es una sucesión con límite 0:
+        Recordemos que 
+        $$x^{(k+1)}=M^{k+1}x^{(0)} + \sum_{i=0}^{\infty} M^i c$$
+        $$\bar{x}^{(k+1)}=M^{k+1}\bar{x}^{(0)} + \sum_{i=0}^{\infty} M^i c$$
+        y restando ambas,
+        $$x^{(k)}- \bar{x}^{(k)}=M^{(k+1)}x^{(0)}=\lambda^{k+1}x$$
+        de manera que $$\|x^{(k)}- \bar{x}^{(k)}\|=\|\lambda^{k+1}x\|=|\lambda|^{k+1}\|x\|$$
+        y por tanto, 
+        $$\lim_{k \to \infty} \|x^{(k+1)}- \bar{x}^{(k+1)}\|=\infty $$
+        contradiciendo así la hipótesis.
+    \qed\end{dem}
+    \subsection{Método de Richardson}
+     \begin{met}[\textbf{de Richardson}]
+        Es el método obtenido al tomar $Q=I$. Esto es, dado $x^{(0)} \in \mathbb R^n$  definimos la sucesión
+        \begin{align}
+         x^{(k+1)}=(I-A)x^{(k)}+b
+         \label{met:richard}
+        \end{align}
+        Que convergerá a $x^*=A^{-1}b$ si y solo si $\rho(M)=\rho(I-A)<1$.
+    \end{met}
+    \begin{ejem}
+        Sea el sistema 
+        $$\begin{cases}
+            x_1+\frac{1}{2}x_2=\frac{3}{2} \\ \frac{1}{2}x_1 + x_2=\frac{3}{2}
+        \end{cases}$$
+        de forma que $x^*=(1,1)$. Consideramos un $x^{(0)}$ cualquiera, consideramos $x^{(0)}=(0,0)$, calculemos la sucesión $x^{(k+1)}=(I-A)x^{(k)}+b$, de forma que 
+        $$I-A=\begin{pmatrix}
+            0 & -\nicefrac{1}{2} \\
+            -\nicefrac{1}{2} & 0
+        \end{pmatrix}=M$$
+        $$x^{(1)}=Mx^{(0)}+b = \begin{pmatrix}
+            0 & -\nicefrac{1}{2} \\
+            -\nicefrac{1}{2} & 0
+        \end{pmatrix} \begin{pmatrix}
+            0 \\ 0
+        \end{pmatrix} + \begin{pmatrix}
+            \nicefrac{3}{2} \\ \nicefrac{3}{2} 
+        \end{pmatrix}=\begin{pmatrix}
+            \nicefrac{3}{2} \\ \nicefrac{3}{2} 
+        \end{pmatrix}$$
+        $$x^{(2))}=M\begin{pmatrix}
+            \nicefrac{3}{2} \\ \nicefrac{3}{2} 
+        \end{pmatrix}+\begin{pmatrix}
+            \nicefrac{3}{2} \\ \nicefrac{3}{2} 
+        \end{pmatrix}=\begin{pmatrix}
+            \nicefrac{3}{4} \\ \nicefrac{3}{4} 
+        \end{pmatrix} $$
+        $$x^{(3)}=M\begin{pmatrix}
+            \nicefrac{3}{4} \\ \nicefrac{3}{4} 
+        \end{pmatrix} + \begin{pmatrix}
+            \nicefrac{3}{2} \\ \nicefrac{3}{2} 
+        \end{pmatrix}= \begin{pmatrix}
+            \nicefrac{9}{8} \\ \nicefrac{9}{8} 
+        \end{pmatrix}$$
+        y de la misma forma
+        $$x^{(4)}=\begin{pmatrix}
+            \nicefrac{15}{16} \\ \nicefrac{15}{16} 
+        \end{pmatrix}$$
+        claramente, la sucesión se va acercando a $x^*$ y esto es así por ser $\rho(M)=\dfrac{1}{2}<1$. En cambio, si tomamos el sistema: 
+        $$\begin{cases}
+        2x_1+x_2=3 \\ x_1+2x_2=3
+        \end{cases}$$
+        su matriz asociada es
+        $$A = \begin{pmatrix}
+            2 & 1 \\ 1 & 2
+        \end{pmatrix} \; \Rightarrow \; c_A(x)=(x-2)^2-1=x^2-4x+3=(x-3)(x-1)$$
+        Los valores propios son 3 y 1, y por tanto el radio espectral no es menor de 1 y el método por eso no convergía.
+    \end{ejem}
+    \begin{obs} Otra forma de expresar el método de Richardson es 
+        $$x^{(k+1)}=x^{(k)} + (-Ax^{(k)}+b) = x^{(k)} - r_A(x^{(k)})$$
+        donde $r_A$ es el residuo, que vimos en la sección de normas.
+    \end{obs}
+    \subsection{Método de Jacobi}
+    \begin{met}[\textbf{de Jacobi}] Sea $Ax=b$ un sistema de ecuaciones donde $A$ es no singular ($|A| \neq 0$). La matriz del sistema $A$ la podemos expresar como
+    $$A=L+D+U$$
+siendo cada una triangular inferior, diagonal y triangular superior respectivamente. Utilizando las notaciones precedentes, si tomamos $Q=D$ obtenemos el siguiente método iterativo:
+\begin{align}
+x^{(k+1)}=M_J x^{(k)}+c_J    
+\label{met:jac}
+\end{align}
+donde
+$$M_J=Q^{-1}(Q-A)=D^{-1}(D-A)=D^{-1}(-L-U)$$
+$$c_J=Q^{-1}b=D^{-1}b$$
+Expresemos ahora el método de Jacobi en coordenadas. Si denotamos por $m_{ij}$ a los elementos de $M_J$ se tiene que
+$$m_{ij}=\delta_{ij}-\dfrac{a_{ij}}{a_{ii}}$$
+De tal forma que 
+$$x_i^{(k+1)}=\sum_{j=1}^n\left(\delta_{ij}-\dfrac{a_{ij}}{a_{ii}}\right)x^{(k)}+\dfrac{b_i}{a_{ii}}$$
+así pues el método de Jacobi es
+$$x_i^{(k+1)}=-\mathlarger{\sum}_{j \neq i}\dfrac{a_{ij}}{a_{ii}} x_j^{(k)} + \dfrac{b_i}{a_{ii}}$$
+    
+    
+    \end{met}
+
+\begin{ejem}
+    Considerando el ejemplo de la sección del método de Richardson, 
+    $$A= \begin{pmatrix}
+            1 & \nicefrac{1}{2} \\
+            \nicefrac{1}{2} & 1
+        \end{pmatrix} \qquad M_J(A)=D^{-1}(-L-U)=\begin{pmatrix}
+            1 &0 \\
+           0 & 1
+        \end{pmatrix}^{-1}\begin{pmatrix}
+            0 & -\nicefrac{1}{2} \\
+            -\nicefrac{1}{2} & 0
+        \end{pmatrix}=\begin{pmatrix}
+            0 & -\nicefrac{1}{2} \\
+            -\nicefrac{1}{2} & 0
+        \end{pmatrix}$$
+        y como $c_{M_J}(x)=x^2-\frac{1}{4}=(x-\nicefrac{1}{2})^2$, entonces $\rho(M_J)=\nicefrac{1}{2}<1$, por tanto el método converge.  
+
+        Consideremos ahora $A=(\begin{smallmatrix}
+            2 & 1 \\ 1 & 2
+        \end{smallmatrix})$ como en el ejemplo anterior. En cambio, la matriz del método de Jacobi
+        $$M_J(A)=D^{-1}(-L-U)=\begin{pmatrix}
+            2 & 0 \\ 0 & 2
+        \end{pmatrix}^{-1} \begin{pmatrix}
+            0 & -1 \\ -1 & 0
+        \end{pmatrix} = \begin{pmatrix}
+            \nicefrac{1}{2} & 0 \\ 0 & \nicefrac{1}{2} 
+        \end{pmatrix}\begin{pmatrix}
+            0 & -1 \\ -1 & 0
+        \end{pmatrix} = \begin{pmatrix}
+            0 & -\nicefrac{1}{2} \\
+            -\nicefrac{1}{2} & 0
+        \end{pmatrix}$$
+    y vemos que tiene la misma matriz de Jacobi que el sistema anterior, es decir, también converge. Si nos damos cuenta, habíamos considerado este sistema con el método de Richardson y no convergía, concluyendo que este método abarca más casos que el anterior. 
+\end{ejem}
+\begin{prop}
+    Si $A$ es DDPF, entonces el método de Jacobi converge.
+\end{prop}
+\begin{dem}
+    Como $\rho(M_J)\leq \|M_J\|$, bastará probar que $\|M_J\|\leq 1 $ para alguna norma subordinada: $\|\cdot\|_{\infty}$.
+    $$M_J=D^{-1}(-L-U)=D^{-1}(D-A)=I-D^{-1}A$$
+    de manera que llamando $M_J=(m_{ij})$, entonces
+    $$m_{ij}=\delta_{ij}-\dfrac{a_{ij}}{a_{ii}}$$
+    Así, 
+    $$\sum_{j =1}^n |m_{ij}|=\underset{j\neq i}{\sum_{j=1}^n} \dfrac{|a_{ij}|}{|a_{ii}|}=\dfrac{1}{{|a_{ii}|}} \sum_{j\neq i} {|a_{ij}|}$$
+    pero como $A$ es DDPF
+    $$|a_{ii}| >  \sum_{j\neq i} {|a_{ij}|}$$
+    luego 
+    $$\sum_{j =1}^n |m_{ij}| < 1 \quad i=1,\ldots,n$$
+    y por tanto,
+    $$\|M_J\|_{\infty}=\max_{i=1,\ldots,n}\left(\sum_{j =1}^n |m_{ij}|\right)<1$$
+    asegurando así la convergencia.
+    \qed\end{dem} 
+    \subsection{Método de Gauss-Seidel}
+    \begin{met}[\textbf{de Gauss-Seidel}]
+    Recordemos el método de Jacobi, en coordenadas:
+    $$\left.\begin{array}{c}
+    x_1^{(k+1)}=-\mathlarger{\sum_{j \neq 1}} \dfrac{a_{1j}}{a_{11}} x_j^{(k)} + \dfrac{b_1}{a_{11}}\\  
+    \vspace{-5mm} \\ x_2^{(k+1)}=-\mathlarger{\sum_{j \neq 2}} \dfrac{a_{2j}}{a_{22}} x_j^{(k)} + \dfrac{b_2}{a_{22}}\\
+    \vdots \qquad \qquad \\
+    x_n^{(k+1)}=-\mathlarger{\sum_{j \neq n}} \dfrac{a_{nj}}{a_{nn}} x_j^{(k)} + \dfrac{b_n}{a_{nn}} \end{array} \right\}$$
+    entonces, el método de Gauss-Seidel consiste en utilizar coordenadas de $x^{(k+1)}$ a medida que se van calculando, es decir, para calcular $x_i^{(k+1)}$ usar $x_{j}^{(k+1)}$ tal que $j<i$. De esta forma, 
+    $$\left.\begin{array}{r}
+    x_1^{(k+1)}=-\mathlarger{\sum_{j > 1}} \dfrac{a_{1j}}{a_{11}} x_j^{(k)} + \dfrac{b_1}{a_{11}}\\  \vspace{-5mm} \\ x_2^{(k+1)}=-\dfrac{a_{21}}{a_{22}}  x_1^{(k+1)} -\mathlarger{\sum_{j > 2}} \dfrac{a_{2j}}{a_{22}} x_j^{(k)} + \dfrac{b_2}{a_{22}}\\
+    \vdots \\
+    x_n^{(k+1)}=-\mathlarger{\sum_{j <n}} \dfrac{a_{nj}}{a_{nn}} x_j^{(k+1)} + \dfrac{b_n}{a_{nn}} \end{array} \right\}$$
+    La fórmula general del método es entonces
+    $$ \; x_i^{(k+1)}=-\sum_{j<i} \dfrac{a_{ij}}{a_{ii}} x_j^{(k+1)} - \sum_{j>i} \dfrac{a_{ij}}{a_{ii}} x_j^{(k)} + \dfrac{b_i}{a_{ii}}$$
+    y reordenando
+    $$x_i^{(k+1)}+\sum_{j<i} \dfrac{a_{ij}}{a_{ii}} x_j^{(k+1)}= - \sum_{j>i} \dfrac{a_{ij}}{a_{ii}} x_j^{(k)} + \dfrac{b_i}{a_{ii}}$$
+    o lo que es lo mismo, 
+    $$a_{ii} x_i^{(k+1)}+\sum_{j<i} a_{ij} x_j^{(k+1)}= - \sum_{j>i} a_{ij} x_j^{(k)} + b_i$$
+    y en forma matricial
+    $$Dx^{(k+1)}+Lx^{(k+1)} = -Ux^{(k)}+b \iff (D+L)x^{(k+1)}= -Ux^{(k)}+b $$
+    De esta manera y siguiendo con las notaciones anteriores, tenemos que $Q=D+L$ y podemos expresar el método de Gauss-Seidel como sigue
+    \begin{align}
+     x^{(k+1)}=M_{GS} x^{(k)} + c_{GS}
+     \label{met:gauss}
+    \end{align}
+    donde
+    $$M_{GS}=(D+L)^{-1}(D+L-A)=(D+L)^{-1}(-U)$$
+    $$c_{GS}=(D+L)^{-1} b$$
+    
+    \end{met}
+    \begin{ejem}
+        Sea la matriz $A=\left(\begin{smallmatrix}
+            1 & \nicefrac{1}{2} \\
+            \nicefrac{1}{2} & 1
+        \end{smallmatrix}\right)$, $b=\left(\begin{smallmatrix}
+            \nicefrac{3}{2} \\ \nicefrac{3}{2}
+        \end{smallmatrix}\right)$, $x^*=\left(\begin{smallmatrix}
+            1 \\ 1
+        \end{smallmatrix}\right)$ como antes, comparemos los métodos:
+        $$\begin{tabular}{c|c}
+              Jacobi & Gauss-Seidel \\
+             \hline $x_1^{(1)}=-\nicefrac{1}{2}\:x_2^{(0)}+\nicefrac{3}{2}=\nicefrac{3}{2}$ & $x_1^{(1)}=-\nicefrac{1}{2}\:x_2^{(0)}+\nicefrac{3}{2}=\nicefrac{3}{2}$ \\
+                $x_2^{(1)}=-\nicefrac{1}{2} \: x_2^{(0)}+\nicefrac{3}{2}=\nicefrac{3}{2}$ & $x_2^{(1)}=-\nicefrac{1}{2}\:x_1^{(1)}+\nicefrac{3}{2}=-\nicefrac{3}{4}+\nicefrac{3}{2}=\nicefrac{3}{4}$ \\
+                $x_1^{(2)}=-\nicefrac{1}{2}\:x_2^{(1)}+\nicefrac{3}{2}=-\nicefrac{3}{4}+\nicefrac{3}{2}=\nicefrac{3}{4}$    & $x_1^{(2)}=-\nicefrac{1}{2}\:x_2^{(1)}+\nicefrac{3}{2}=-\nicefrac{3}{8}+\nicefrac{3}{2}=-\nicefrac{9}{8}$ \\
+                $x_1^{(2)}=-\nicefrac{1}{2}\: x_1^{(1)}+\nicefrac{3}{2}=-\nicefrac{3}{4}+\nicefrac{3}{2}=\nicefrac{3}{4}$    & $x_2^{(2)}=-\nicefrac{1}{2}\:x^{(2)}_2 + \nicefrac{3}{2}=-\nicefrac{9}{16}+\nicefrac{3}{2}=\nicefrac{15}{16}$ \\ 
+                $\vdots$ & $\vdots$ \\   
+        \end{tabular}$$        
+        pudiendo así observar cómo converge más rápidamente el método de Gauss-Seidel que el de Jacobi.
+    \end{ejem}
+    \begin{prop}
+        Si $A$ es DDPF, entonces el método de Gauss-Seidel converge.
+    \end{prop}
+    \begin{dem}
+        Vamos a demostrar que $\rho(M_{GS})<1$. Sea $x$ un vector propio de $M_{GS}$ con valor propio $\lambda$, es decir
+        $$M_{GS} x = \lambda x \iff (D+L)^{-1}(-U) x = \lambda x \iff -Ux=(D+L)\lambda x$$
+        o lo que es lo mismo
+        $$-Ux=\lambda Dx + \lambda Lx $$
+        Entonces, coordenada a coordenada, para cada $i=1,\ldots,n$
+        $$-\sum_{j>i} a_{ij} x_j=\lambda a_{ii}x_i + \lambda \sum_{j<i} a_{ij} x_j$$
+        o lo que es lo mismo
+        $$\lambda a_{ii} x_i = - \lambda \sum_{j < i} a_{ij} x_j - \sum_{j>i}a_ij x_j$$
+        Tomando ahora valor absoluto (y aplicando la desigualdad triangular):
+        $$|\lambda| |a_{ii}| |x_i| \leq |\lambda| \sum_{j < i} |a_{ij}| |x_j| + \sum_{j>i} |a_{ij}| |x_j|$$
+        
+        Sea $i$ tal que $|x_i|=\max_{j=1,\ldots, n} |x_j|=\|x\|_{\infty} > 0$, si dividimos por $|x_i| \neq 0$, entonces
+        $$|\lambda| |a_{ii}| \leq |\lambda| \sum_{j < i} |a_{ij}| \underbrace{\dfrac{|x_j|}{|x_i|}}_{\leq 1} + \sum_{j>i} |a_{ij}| \underbrace{\dfrac{|x_j|}{|x_i|}}_{\leq 1} \leq |\lambda| \sum_{j < i} |a_{ij}| + \sum_{j>i} |a_{ij}|$$
+        y despejando $|\lambda|$:
+        $$\displaystyle |\lambda|\leq \dfrac{\underset{{j > i}}{\sum} |a_{ij}|}{|a_{ii}|-\underset{{j < i}}{\sum} |a_{ij}|}$$
+        como $A$ es DDPF, 
+        $$|a_{ii}| > \sum_{j > i} |a_{ij}| + \sum_{j < i} |a_{ij}|$$
+        luego
+        $$|\lambda|<1$$
+        asegurando así la convergencia.
+    \qed\end{dem}
+    \begin{obs}
+        Ambas proposiciones anteriores son también ciertas para matrices diagonalmente dominantes por columnas. La de Jacobi es sencillamente demostrable, el de Gauss-Seidel no es para nada trivial.
+    \end{obs}
+    \begin{lem}[\textbf{sobre el determinante de una matriz tridiagonal}] \label{lemadet} Sea $A=D+L+U$ una matriz tridiagonal y $A_{\lambda}= D +\frac{1}{\lambda} L +\lambda U$ con  $\lambda \neq 0$, entonces $$|D+L+U|=|A|=|A_{\lambda}|=\left|D+\dfrac{1}{\lambda}L +\lambda U \right|$$ 
+    \end{lem}
+    \begin{dem}
+        Cogemos la matriz $A$ y la cambiamos de base. Sea $\{e_1,\ldots,e_n\}$ la base estándar de $\mathbb R^n$ y $\{u_1, \ldots, u_n\}$ la base dada por 
+        $$u_i=\lambda^{i-1} e_i$$
+        Como $Ae_i=a_{(i-1)i}e_{i-1}+a_{ii}e_i+a_{(i+1)i}e_{i+1}$, que son las columnas de $A$, ya que
+        $$Ae_i=\scriptsize{\begin{pmatrix}
+            a_{11} & a_{12} & 0 & \cdots & 0 \\
+            a_{21} & a_{22} & a_{23} & 0 & \vdots \\
+            0 & \ddots & \ddots & \ddots & 0\\
+            \vdots & \ddots &\ddots & a_{(n-1)(n-1)}& a_{(n-1)n} \\
+            0 & \cdots  & 0 & a_{n(n-1)} & a_{nn}
+        \end{pmatrix} \begin{pmatrix}
+            0 \\ \vdots \\ 0 \\ 1 \\ 0 \\ \vdots \\ 0 
+        \end{pmatrix}= \begin{pmatrix}
+            0 \\ \vdots \\ 0 \\ a_{(i-1)i} \\ a_{ii} \\ a_{(i-1)i} \\ 0 \\ \vdots \\ 0 
+        \end{pmatrix}}$$
+        hacemos el cambio de base y
+        $$Au_i=A\lambda^{i-1} e_i=\lambda^{i-1} (a_{(i-1)i}e_{i-1}+a_{ii}e_i+a_{(i+1)i}e_{i+1}) =\lambda^{i-1} \left( \dfrac{1}{\lambda^{i-2}} a_{(i-1)i}u_{i-1}+\dfrac{1}{\lambda^{i-1}}a_{ii}u_i+\dfrac{1}{\lambda^{i}}a_{(i+1)i}u_{i+1}\right)=$$
+        $$=\underbrace{\lambda a_{(i-1)i}}_{\lambda U}u_{i-1} + \underbrace{a_{ii}}_{D}u_i+\underbrace{\dfrac{1}{\lambda}a_{(i+1)i}}_{\nicefrac{1}{\lambda}L} u_{i+1}$$
+        y por tanto, la matriz de $A$ en la base $u_i$ es de la forma $\dfrac{1}{\lambda}L + D +\lambda U$, y como el determinante es invariante por cambios de base, $|A|=|A_{\lambda}|$.
+    \qed\end{dem}
+    \begin{prop}
+        Sea $A$ una matriz tridiagonal, entonces el método de Jacobi converge si y solo si lo hace el método de Gauss-Seidel. Además, en caso de converger, converge más rápido el método de Gauss-Seidel.
+    \end{prop}
+    \begin{dem}
+
+        Calculamos en primer lugar el polinomio característico de $M_J=D^{-1}(-L-U)$, 
+        $$c_{M_J}(x)=|xId-M_J|=|xId-D^{-1}(-L-U)|=|D^{-1}(DxI+L+U)|=|D^{-1}| \cdot |xD+L+U|$$
+        y el polinomio característico del método de Gauss-Seidel es
+        $$c_{M_{GS}}(x)=|xId-M_{GS}|=|xId-(D+L)^{-1}(-U)|=|D+L|^{-1} |x(D+L)+U|\overset{(1)}{=}$$
+        $$\overset{(1)}{=}|D|^{-1} |xD+xL+U|$$
+        $(1)$ ya que $|D+L|=|D|$ por ser $D+L$ una matriz triangular.
+        
+        Sea $\lambda \neq 0 $ un valor propio de la \underline{matriz de Gauss-Seidel},
+        $$0=c_{M_{GS}}(\lambda)=|D|^{-1} |\lambda D+\lambda L+U|=|D|^{-1} \left|\sqrt{\lambda}\left(\sqrt{\lambda} D+\sqrt{\lambda}L +\frac{1}{\sqrt{\lambda}}U \right)\right|=$$
+        $$=\left(\sqrt{\lambda}\right)^n|D^{-1}|  \left|\sqrt{\lambda} D+\sqrt{\lambda}L +\frac{1}{\sqrt{\lambda}}U\right| $$
+        y aplicando el lema, 
+        $$c_{M_{GS}}(\lambda)=\left(\sqrt{\lambda}\right)^n |D^{-1}|  \left|\sqrt{\lambda} D+L +U \right|=\left(\sqrt{\lambda}\right)^n c_{M_{J}}(\sqrt{\lambda})$$
+        es decir, $\sqrt{\lambda}$ es valor propio de $M_J$, luego
+        $$\rho(M_{J})^2=\rho(M_{GS})$$
+        luego $\rho(M_J)<1 \iff \rho(M_{GS})<1$ y si $\rho(M_J) < 1$, entonces
+        $$\rho(M_{GS})=\rho(M_{J})^2 < \rho(M_J)$$
+        así pues, la convergencia de uno asegura la convergencia del otro, y viceversa.
+    \qed\end{dem}
+    \subsection{Método SOR}
+    Dado el sistema $Ax=b$, $|A|\neq 0$, $a_{ii} \neq 0$, el método de Gauss-Seidel nos decía que
+    $$x_i^{(k+1)}=-\sum_{j<i} \dfrac{a_{ij}}{a_{ii}} x_j^{(k+1)} - \sum_{j>i} \dfrac{a_{ij}}{a_{ii}} x_j^{(k)} + \dfrac{b_i}{a_{ii}}$$
+    \begin{met}
+        [\textbf{SOR}] Se define el método SOR como 
+        $$\; x_i^{(k+1)}=\omega\left(-\sum_{j<i} \dfrac{a_{ij}}{a_{ii}} x_j^{(k+1)} - \sum_{j>i} \dfrac{a_{ij}}{a_{ii}} x_j^{(k)} + \dfrac{b_i}{a_{ii}} \right)+(1-\omega) x_i^{(k)} \; $$
+        haciendo una media ponderada entre la parte de Gauss-Seidel y $x^{(k)}$. En forma matricial, como siempre pasamos a la izquierda los términos en $(k+1)$. Multiplicando por $\frac{a_{ii}}{\omega}$
+        $$\dfrac{a_{ii}}{\omega}x_i^{(k+1)}=-\sum_{j<i} a_{ij} x_j^{(k+1)} - \sum_{j>i} a_{ij} x_j^{(k)} + b_i+\dfrac{1-\omega}{\omega} a_{ij} x_i^{(k)}$$
+        y reordenando
+        $$\left(\dfrac{a_{ii}}{\omega}x_i^{(k+1)} +  \sum_{j<i} a_{ij} x_j^{(k+1)} \right)=\dfrac{1-\omega}{\omega} a_{ij} x_i^{(k)} - \sum_{j>i} a_{ij} x_j^{(k)} + b_i$$
+        y ya en forma matricial
+        $$\biggl(\underbrace{\dfrac{1}{\omega} D + L}_{Q}\biggr)x^{(k+1)} = \biggl(\underbrace{\dfrac{1-\omega}{\omega} D -U}_{Q-A}\biggr)x^{(k)} + b $$
+        donde efectivamente
+        $$Q-A=\dfrac{1}{\omega} D + L - D - L -U = \left(\frac{1}{\omega}-1\right) D - U =\dfrac{1-\omega}{\omega} D -U$$
+        y por tanto el método es 
+        \begin{align}
+         x^{(k+1)}=M_{S}x^{(k)} +c_S 
+         \label{met:sor}
+        \end{align}
+        con $M_S=I-Q^{-1}A$ con $Q=\frac{1}{\omega} D + L$ y $c_S=Q^{-1}b$
+    \end{met}
+    \begin{teo}[\textbf{de Kahan}]
+        Si el método SOR converge, entonces $0 < \omega < 2$.
+    \end{teo}
+    \begin{dem}
+        Calculemos $|M_{SOR}|$
+        $$|M_{SOR}|=\left|\left(\dfrac{1}{\omega} D +L\right)^{-1}\left(\dfrac{1-\omega}{\omega} D -U\right)\right|=\left|\dfrac{1}{\omega} D +L\right|^{-1} \left|\dfrac{1-\omega}{\omega} D -U \right|\overset{(1)}{=}\left| \dfrac{1}{\omega} D\right|^{-1}\left| \dfrac{1-\omega}{\omega} D\right|=$$
+        $$=\dfrac{\left(\frac{1-\omega}{\cancel{\omega}}\right)^n \cancel{|D|}}{\left(\frac{1}{\cancel{\omega}}\right)^n \cancel{|D|}}=(1-\omega)^n$$
+        $^{(1)}$ son ambas matrices triangulares.
+        
+        Además, 
+        $$c_A(x)=|xId-A|=\prod_{i=1}^n (x-\lambda_i) \; \Rightarrow \; c_A(0)=|-A|=\prod_{i=1}^n (-\lambda_i)$$
+        de forma que 
+        $$|det(M_{SOR})|=|1-\omega|^n=\prod_{i=1}^n (\lambda_i) < 1$$
+        siendo $\lambda_i$ valores propios de $M_{SOR}$, la desigualdad es necesaria para que el método converja ($\rho(M_{SOR})< 1$). Así pues
+        $$|1-\omega|^n < 1 \implies |1-\omega| < 1 \iff -1<1-\omega < 1 \iff 0 < 2 -\omega <2 $$
+        o lo que es lo mismo, $0 < \omega < 2$.
+    \qed\end{dem}
+    \begin{teo}[\textbf{de Ostrowski}] 
+        Sea $A=D-C-C^t$ una matriz simétrica y definido positiva ($D$ no es necesariamente diagonal, pero sí simétrica y definido positiva). Sea $Q=\alpha D-C$, si $Q$ es invertible, entonces $\rho(M)< 1 \forall \alpha > \nicefrac{1}{2}$ donde $M=Q^{-1}(Q-A)=I-Q^{-1}A$. 
+    \end{teo}
+    \begin{dem}
+        Sea $\lambda$ un valor propio de $M$ con vector propio $x \neq 0$, esto es, 
+        $$Mx=\lambda x \iff Q^{-1}(Q-A)x=\lambda x \iff (Q-A)x=\lambda Qx$$
+        es decir,
+        $$Qx-Ax=\lambda Q x \iff Q(1-\lambda)x=Ax$$
+        llamamos ahora $y=(1-\lambda)x$, de forma que tenemos las igualdades siguientes
+        \begin{enumerate}
+            \item $Qy=Ax$
+            \item $(Q-A)y=Qy-Ay=Ax-Ay=A(x-y)=A(1-(1-\lambda))x=\lambda A x$
+        \end{enumerate}
+        Tomemos ambas igualdades y multipliquemos escalarmente por $y$:
+        \begin{enumerate}
+            \item $(1-\lambda)x^t A x = y^t A x= y^t Q y = y^t (\alpha D-C) y = \alpha y^t D y - y^t C y$
+            \item $(1-\lambda)\lambda x^t A x= y^t (\lambda A x)= y^t (Q-A) y =y^t (\alpha D-C - D +C -C^t) y=(\alpha-1)y^t D y +y^t C^t y$
+        \end{enumerate}
+        sumando ambas igualdades (los extremos)
+        $$ (1-\lambda)(1+\lambda) x^t A x= (2\alpha-1) y^t D y + \underbrace{y^t C y - y^t C^t y}_{=0}$$
+        Como $A$ y $D$ son definido positivas, $x^tAx > 0 $ e $y^t Q y > 0$, de manera que $(1-\lambda)(1+\lambda)=1-\lambda^2$ y $2\alpha-1$ son del mismo signo. 
+
+        Si $2\alpha-1>0 \iff \alpha> \nicefrac{1}{2}$, entonces $1-\lambda^2 > 0$, o lo que es lo mismo, $0 < \lambda^2 < 1 \iff |\lambda| < 1$.
+    \qed\end{dem}
+    \begin{cor}
+        Si $A$ es simétrica y definido positiva, entonces el método SOR converge $\forall 0 < \omega < 2$. 
+    \end{cor}
+    \begin{dem}
+        Tomemos la división habitual $A=D+L+U$ donde $U=L^t$ por simetría. La matriz $D$ es definido positiva pues todas las $a_{ii} > 0$. Estamos entonces en las condiciones del Teorema de Ostrowsdki y podemos aplicarlo de forma que
+        $$Q=\underbrace{\dfrac{1}{\omega}}_{=\alpha}D+\underbrace{L}_{=-C}$$
+        así pues 
+        $$\rho(M_{SOR})=\rho(Q^{-1}(Q-A))<1 \quad \forall \alpha = \dfrac{1}{\omega}> \nicefrac{1}{2}$$
+        por tanto $0 < \omega < 2$. \hfill $\blacksquare.$
+    \qed\end{dem}
+    Hagamos ahora una comparación entre el método de Jacobi y el método SOR para matrices tridiagonales cuya matriz de Jacobi $M_J$ tenga todos los varoles propios reales. 
+    \begin{obs}
+        Recordemos que $c_{M_J}(x)=|xD+L+U|$, luego $$c_{M_J}(-x)=|-xD+L+U|=(-1)^n|xD-L-U|=(-1)^n|xD+L+U|=(-1)^nc_{M_J}(x)$$
+        por el \textit{lema sobre el determinante de una matriz tridiagonal} \ref{lemadet} previo a la demostración de la comparación entre el método de Jacobi y Gauss-Seidel. Así pues, si $\lambda$ es valor propio, $-\lambda$ también lo es. Por tanto
+        $$c_{M_J}(x)=\left\{ \begin{array}{ll}
+             \prod(x^2-\lambda_i^2) &  \text{ si }\dim =n=2m \\
+             x \prod(x^2-\lambda_i^2) & \text{ si }\dim =n=2m+1
+        \end{array} \right.$$
+        Calculemos $c_{M_{SOR}}(x)$:
+        $$c_{M_{SOR}}(x)=\left| xId- \left( \dfrac{1}{\omega} D + L \right)^{-1} \left( \dfrac{1-\omega}{\omega} D - U \right) \right| =\left| \dfrac{1}{\omega} D + L  \right|^{-1}\left| x \left( \dfrac{1}{\omega} D + L \right) - \left( \dfrac{1-\omega}{\omega} D - U \right) \right| =$$
+        $$=\left| \dfrac{1}{\omega} D + L  \right|^{-1}\left|\dfrac{x-1+\omega}{\omega} D + xL + U  \right| = (\sqrt{x})^n \left| \dfrac{1}{\omega} D + L  \right|^{-1} \left|\dfrac{x-1+\omega}{\sqrt{x}\omega} D + \sqrt{x} L + \dfrac{1}{\sqrt{x}} U  \right|=$$
+        y por el \textit{lema sobre el determinante de una matriz tridiagonal} \ref{lemadet}, que ya hemos mencionado
+        $$=(\sqrt{x})^n \left| \dfrac{1}{\omega} D + L  \right|^{-1} \left|\dfrac{x-1+\omega}{\sqrt{x}\omega} D +  L + U  \right|$$
+        Así, si $\mu \neq 0$ es valor propio de $M_{SOR}$, entonces
+        $$\lambda=\dfrac{\mu - 1+ \omega }{\sqrt{\mu} \omega}$$
+        es valor propio de $M_J$. 
+
+        \begin{enumerate}[a)]
+            \item Veamos que si $\mu \geq 1$, $\lambda \geq 1$, es decir, si el método de SOR no converge, el de Jacobi tampoco. Estudiemos la función que relaciona $\lambda$ con $\mu$. Sea $f(x)=\frac{x-1+\omega}{\omega \sqrt{x}}$. Es claro que $f(1)=\frac{1-1+\omega}{\omega}=1$ y veamos ahora cómo es $f'(x)$:
+            $$f'(x)=\dfrac{-1}{2} \dfrac{x-1+\omega}{x^{\nicefrac{3}{2}}\omega} + \dfrac{1}{\omega \sqrt{x}} = \dfrac{2x-x+1-\omega}{2x^{\nicefrac{3}{2}}\omega}=\dfrac{x+1-\omega}{2x^{\nicefrac{3}{2}}\omega} > 0$$
+            ya que $x \geq 1$ y $\omega \in [0,2]$. Así, $f(x)$ es creciente, o lo que es lo mismo, si $\mu \geq 1$, $\lambda=f(\mu)\geq f(1) \geq 1$, así que hemos demostrado que si el método de SOR no converge, el de Jacobi tampoco.
+            \item Despejamos $\mu$ como función de $\lambda$:
+             $$\lambda=\dfrac{\mu - 1+ \omega }{\sqrt{\mu} \omega} \iff \lambda^2 \omega^2 \mu = (\mu-(1-\omega))^2=\mu^2 - 2(1-\omega)\mu + (1-\omega)^2$$
+             luego
+             $$\mu^2- \mu (\lambda^2 \omega^2 +2(\omega -1)) + (1-\omega)^2=0$$
+             que será
+             $$\mu_{\pm}=\dfrac{\lambda^2 \omega^2 +2(\omega -1)\pm \sqrt{(\lambda^2 \omega^2 +2(\omega -1))^2 - 4(1-\omega)^2 }}{2} = $$
+             donde el discriminante es 
+            $$\Delta=\lambda^4 \omega^4 + \cancel{4(1-\omega)^2} + 4 \lambda^2 \omega^2 (1-\omega) -\cancel{4(1-\omega)^2}=\lambda^4 \omega^4  + 4 \lambda^2 \omega^2 (1-\omega) $$
+            y la ecuación es 
+            $$=\dfrac{\lambda^2 \omega^2 +2(\omega -1)\pm\lambda \omega \sqrt{\lambda^2 \omega^2 + 4(1-\omega) }}{2} $$
+
+            Si $\lambda  \geq 1$, entonces
+            $$\mu_+ \geq \dfrac{1}{2}(\omega^2 + 2(1-\omega)) + \dfrac{1}{2} \omega \sqrt{\underbrace{\omega^2 + 4 - 4\omega}_{(2-\omega)^2}}=\dfrac{1}{2}\omega +(1-\omega) + \dfrac{1}{2} \omega (2-\omega) = \dfrac{1}{2}\omega^2 + 1-\omega + \omega - \dfrac{\omega^2}{2}=1$$
+            y, por lo tanto, $M_{SOR}$ tampoco converge.
+        \end{enumerate}
+        Así, concluimos que el método de Jacobi converge si y solo si converge el método SOR.
+    \end{obs}
+
+
+    
+\vfill
+
+
+
+
+
+
+
+\section{Ejercicios}
+\begin{ejer}
+Calcular por el método de Crout la factorización $LU$ de la siguiente matriz:
+$$A=\begin{pmatrix}
+1&3&4\\
+-2&1&3\\
+0&2&-1\\
+\end{pmatrix}$$
+\end{ejer}
+\begin{sol}
+Si denotamos por $A_i$ a la columna $i$-ésima, las ecuaciones que determinan los coedicientes de las matrices $L$ y $U$ son:
+$$A_i=L\cdot U_i\qquad i=1,2,3$$
+Sean entonces
+$$L=\begin{pmatrix}
+1&0&0\\
+\ell_{21}&1&0\\
+\ell_{31}&\ell_{32}&1
+\end{pmatrix}\qquad U=\begin{pmatrix}
+u_{11}&u_{12}&u_{13}\\
+0&u_{22}&u_{23}\\
+0&0&u_{33}
+\end{pmatrix}$$
+$$C=\begin{pmatrix}
+u_{11}&u_{12}&u_{13}\\
+\ell_{21}&u_{22}&u_{23}\\
+\ell_{31}&\ell_{32}&u_{33}
+\end{pmatrix}$$
+Apliquemos entonces el método de Crout para calcular las columnas de $C$:
+
+\noindent\underline{$i=1$}
+$$A_1=L\cdot U_1\Longrightarrow\begin{pmatrix}
+1\\-2\\0    
+\end{pmatrix}=\begin{pmatrix}
+  1&0&0\\
+\ell_{21}&1&0\\
+\ell_{31}&\ell_{32}&1 
+\end{pmatrix}\cdot \begin{pmatrix}
+u_{11}\\0\\0
+\end{pmatrix}$$
+De donde se deduce que
+$$u_{11}=1\qquad \ell_{21}=\dfrac{-2}{u_{11}}=-2\qquad\ell_{31}=\dfrac{0}{u_{11}}=0$$
+\underline{$i=2$}
+$$A_2=L\cdot U_2\Longrightarrow\begin{pmatrix}
+3\\1\\2    
+\end{pmatrix}=\begin{pmatrix}
+  1&0&0\\
+\ell_{21}&1&0\\
+\ell_{31}&\ell_{32}&1 
+\end{pmatrix}\cdot \begin{pmatrix}
+u_{12}\\u_{22}\\0
+\end{pmatrix}$$
+Y con lo cual
+$$u_{12}=3\qquad u_{22}=1-\ell_{21}\cdot u_{12}=7\qquad \ell_{32}=\dfrac{1}{u_{22}}(2-\ell_{31}\cdot u_{12})=\dfrac{2}{7}$$
+\underline{$i=3$}
+$$A_3=L\cdot U_3\Longrightarrow\begin{pmatrix}
+4\\3\\-1    
+\end{pmatrix}=\begin{pmatrix}
+  1&0&0\\
+\ell_{21}&1&0\\
+\ell_{31}&\ell_{32}&1 
+\end{pmatrix}\cdot \begin{pmatrix}
+u_{13}\\u_{23}\\u_{33}
+\end{pmatrix}$$
+Luego
+$$u_{13}=4\qquad u_{23}=3-\ell_{21}\cdot u_{13}=11\qquad u_{33}=-1-\ell_{21}\cdot u_{13}-\ell_{32}\cdot u_{23}=-\dfrac{29}{7}$$
+Concluyendo entonces que la factorización $LU$ de $A$ es
+$$A=\begin{pmatrix}
+1&3&4\\
+-2&1&3\\
+0&2&-1\\
+\end{pmatrix}=\begin{pmatrix}
+1&0&0\\
+-2&1&0\\
+0&\nicefrac{2}{7}&1
+\end{pmatrix}\cdot\begin{pmatrix}
+1&3&4\\
+0&7&11\\
+0&0&\nicefrac{-29}{7}
+\end{pmatrix}$$
+\end{sol}
+\begin{ejer}
+    [\textbf{Problema de los mínimos cuadrados}] Sea $A$ una matriz $n \times m$ con $m \leq n$ de rango máximo y $b \in \mathbb R^n$, $b \nin Im \: A$. Es decir, $Ax=b$ no tiene solución. Debemos encontrar $x \in \mathbb R^m$ tal que $$|Ax-b|<|Ay-b| \forall y  \in \mathbb R^m \: / \: y \neq x$$
+
+    Multiplicamos (escalarmente) $(Ay)\cdot (Ax-b)=0$, luego
+    $$y^tA^t A x- y^tA^tb=0 \iff y^t(A^tAx-A^tb)=0$$
+    de forma que $x$ es solución del sistema $A^tAx=A^tb$.
+
+    El problema trata de encontrar la recta que mejor se ajusta a una nube de datos $\{(x_i,y_i)\}$
+\end{ejer}
+\begin{sol}
+    Sea la recta $y=\alpha x + \beta$ (las incógnitas son $\alpha,\beta$) y por tanto, para cada $x_i,y_i$ se tiene la ecuación $y_i=\alpha x_i + \beta$ y el sistema asociado es
+    $$\underbrace{\begin{pmatrix}
+        x_1 & 1 \\ \vdots & \vdots \\ x_n & 1
+    \end{pmatrix}}_A \begin{pmatrix}
+        \alpha \\ \beta
+    \end{pmatrix} = \underbrace{\begin{pmatrix}
+        y_1 \\ \vdots \\ y_n
+    \end{pmatrix}}_b $$    
+    y calculamos $S=A^tA$ y $A^tb$:
+    $$\begin{pmatrix}
+        x_1 & \cdots & x_n \\ 1 & \cdots & 1
+    \end{pmatrix}\begin{pmatrix}
+        x_1 & 1 \\ \vdots & \vdots \\ x_n & 1
+    \end{pmatrix}=\begin{pmatrix}
+        |x_i|^2 & \sum x_i \\ \sum x_i & n
+    \end{pmatrix} \qquad  A^t b = \begin{pmatrix}
+        x \cdot y \\ \sum y_i
+    \end{pmatrix}$$
+    y utilizamos la factorización $QR$ donde $R$ es triangular superior (al ser $A$ no cuadrada será $R=\scriptsize{\left( \begin{array}{c}
+         R'  \\
+         \hdashline 0 
+    \end{array}\right)}$ y $Q$ es una matriz ortogonal $(Q^tQ=Id)$. Como buscamos que el error sea el mínimo, pero positivo, hacemos buscar el mínimo en
+    $$|Ax-b|^2=|Q^t(Ax-b)|^2=|Rx-Q^tb|^2$$
+    donde $$Rx=\left( \begin{array}{c}
+         R'  \\
+         \hdashline 0 
+    \end{array}\right)\left( \begin{array}{c}
+         x'  \\
+         \hline x'' 
+    \end{array}\right)=\left( \begin{array}{c}
+         R' x' \\
+         \hdashline 0 
+    \end{array}\right) \; \Rightarrow \; Rx-Q^tb=\left( \begin{array}{c}
+         R' x' -(Q^tb)' \\
+         \hdashline -(Q^tb)'' 
+    \end{array}\right) $$
+    de manera que 
+    $$|Rx-Q^tb|^2=|R'x'-(Q^tb)'|^2 + |Q^tb|^2$$ y la solución del problema es la solución de $R'x'=Q^tb'$. 
+\end{sol}
+\begin{ejer}
+Sea $A$ una matriz no singular $(|A|\neq 0)$ con todos los valores propios reales y positivos. Para resolver el sistema
+$$Ax=b$$
+planteamos el método
+$$x^{(k+1)}=x^{(k)}+\omega(-Ax^{(k)}+b)$$
+con $\omega>0$. ¿Para qué valores de $\omega$ converge el método?
+\end{ejer}
+\begin{sol}
+En forma matricial, el método es
+$$x^{(k+1)}=(I-\omega A)x^{(k)}+\omega \cdot b=M_{\omega}x^{(k)}+c$$
+Usando la notación de la teoría se tiene que
+$$M_{\omega}=I-\omega A=\left(\dfrac{1}{\omega}I\right)^{-1}\left(\dfrac{1}{\omega}I-A\right)=Q^{-1}(Q-A)$$
+$$c=Q^{-1}b$$
+Tenemos que ver entonces cuánto tiene que valor $\omega$ para que $\rho(M_{\omega})<1$. Calculemos entonces los valores propios de $M_{\omega}$ a partir de su polinomio característico:
+$$c_{M_{\omega}}(x)=|xId-M_{\omega}|=|xI-I+\omega A|=|(x-1)I+\omega A|=(-\omega)^n\left|\dfrac{1-x}{\omega} I-A\right|=(-\omega)^n\cdot c_A\left(\dfrac{1-x}{\omega}\right)$$
+Por tanto, si $\mu$ es un valor propio de $M_{\omega}$ 
+$$c_{M_{\omega}}(\mu)=0=(-\omega)^{n}\cdot c_A\left(\dfrac{1-\mu}{\omega}\right)$$
+Luego $\lambda=\dfrac{1-\mu}{\omega}$ es un valor propio de $A$ y despejando obtenemos que $\mu=1-\omega\lambda$. Veamos ahora cuánto tiene que valer $\omega$ para que $|\mu|<1$:
+$$-1<\mu<1$$
+$$-1<1-\omega\lambda<1$$
+$$0<\omega\lambda<2$$
+$$0<\omega<\dfrac{2}{\lambda}$$
+Con lo cual, para que $$\rho(M_{\omega})<1$$ basta con que
+$$\omega<\dfrac{2}{\rho(A)}$$
+\end{sol}
+\begin{ejer}
+Demostrar que si $A$ es DDPC entonces el método de Jacobi converge.
+\end{ejer}
+\begin{sol}
+Sabemos que si $A$ es DDPF entonces $\rho(M_J(A))<1$, donde
+$$A=L+D+U$$
+$$M_J(A)=D^{-1}(-L-U)$$
+Si $A$ es DDPC entonces $A^t$ es DDPF y, con lo cual $\rho(M_J(A^t))<1$. Dado que $A^t=D^t +L^t + U^t$, observemos entonces que
+$$M_J(A^t)=D^{-1}(-U^t-L^t)=(M_J(A))^t$$
+es decir, $M_J(A^t)$ y $M_J(A)$ son traspuestas la una de la otra. Como las matrices traspuestas tienen los mismos valores propios, $\rho(M_J(A^t))=\rho(M_J(A))<1$.
+\end{sol}

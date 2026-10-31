@@ -1,0 +1,219 @@
+\chapter*{FORMULARIO}
+\section*{Aproximación de raíces}
+\noindent\textbf{Método del punto fijo} (\ref{met:punto})
+$$ x_{n+1}=f(x_n)$$
+$$|\varepsilon_n|\leq k |\varepsilon_{n-1}| \qquad k<1$$
+\textbf{Método de Newton}
+\begin{itemize}
+    \item Método de Newton (\ref{met:newton})
+    $$x_{n+1}=x_n-\dfrac{f(x_n)}{f'(x_n)}$$
+     $$|x_{n+1}-\alpha|< C \: |x_n-\alpha|^2 \qquad C=\dfrac{\max|f''(x)|}{2\min|f'(x)|} $$
+     \item Método de Newton para raíces múltiples (\ref{met:newtonm})
+     $$x_{n+1}=x_n-m\: \dfrac{f(x_n)}{f'(x_n)}$$
+\end{itemize}
+\textbf{Métodos Cuasi-Newton} (\ref{met:cuasi})
+$$x_{n+1}=x_n-\frac{f(x_n)}{a_n}\qquad a_n=\dfrac{f(x_n+h_n)-f(x_n)}{h_n}$$
+\begin{itemize}
+    \item Método de la secante (\ref{met:sec})
+    $$x_{n+1}=x_n-\dfrac{f(x_n)}{a_n} \qquad  a_n=\dfrac{f(x_n)-f(x_{n-1})}{x_n-x_{n-1}} $$
+    \item Método de Steffensen (\ref{met:stef})
+    $$ x_{n+1}=x_n-\dfrac{f(x_n)}{a_n} \; \;\qquad \; \; a_n=\dfrac{f(x_n)-f(x_n+f(x_o))}{f(x_n)}$$
+\end{itemize}
+\section*{Sistemas de ecuaciones lineales}
+\noindent\textbf{Métodos directos}
+\begin{itemize}
+    \item Método del descenso (\ref{met:des})
+    $$x_1=\dfrac{b_1}{a_{11}}\qquad x_i=
+\dfrac{1}{a_{ii}}(b_i-\sum_{j=1}^{i-1}a_{ij}x_j)$$
+\item  Método del remonte (\ref{met:rem})
+$$x_n=\dfrac{b_n}{a_{nn}}  \qquad x_i=\dfrac{1}{a_{ii}}(b_i-\sum_{j=i+1}^{n}a_{ij}x_j)$$
+\end{itemize}
+\textbf{Método de Cholesky} (\ref{met:chol})
+$$u_{ij}=\dfrac{1}{u_{ii}}\left(a_{ij}-\sum_{k=1}^{i-1}u_{ki}\cdot u_{kj}\right) $$
+\textbf{Estudio de los errores en $\mathbb{R}^n$}
+\begin{itemize}
+    \item Radio espectral (\ref{radio})
+    $$\rho(A)=\max_{1 \leq i \leq n}\{|\lambda_i|\}$$
+    \item Residuo (\ref{resi})
+$$r(x_a)=Ax_a-b$$
+    \item Número de condición (\ref{num:cond})
+    $$cond(A)=\|A^{-1}\|\cdot \|A\|$$
+\end{itemize}
+\textbf{Métodos iterativos} (\ref{met:it})
+$$x^{(k+1)}=Q^{-1}(Q-A)x^{(k)}+Q^{-1}b$$
+\begin{itemize}
+    \item Método de Richardson (\ref{met:richard})
+    $$x^{(k+1)}=(I-A)x^{(k)}+b$$
+    \item Método de Jacobi (\ref{met:jac})
+    $$x^{(k+1)}=M_J x^{(k)}+c_J $$
+    $$M_J=D^{-1}(-L-U)$$
+$$c_J=D^{-1}b$$
+    \item Método de Gauss-Seidel (\ref{met:gauss})
+     $$x^{(k+1)}=M_{GS} x^{(k)} + c_{GS}$$
+     $$M_{GS}=(D+L)^{-1}(D+L-A)=(D+L)^{-1}(-U)$$
+    $$c_{GS}=(D+L)^{-1} b$$
+    \item Método SOR (\ref{met:sor})
+    $$x^{(k+1)}=M_{S}x^{(k)} +c_S$$
+    $$M_S=I-\left(\frac{1}{\omega} D + L\right)^{-1}A$$
+    $$c_S=\left(\frac{1}{\omega} D + L\right)^{-1} b$$
+    
+\end{itemize}
+\section*{Interpolación polinómica}
+\noindent\textbf{Interpolación de Lagrange}
+\begin{itemize}
+    \item Polinomios de Lagrange (\ref{pol:lag})
+$$\ell_i(x)=\prod_{j\neq i}\dfrac{x-x_j}{x_i-x_j} = \dfrac{\Omega_i(x)}{\Omega_i(x_i)}$$
+  \item Polinomio de interpolación de Lagrange (\ref{pol:lagrange})
+  $$p_n(x)=\sum_{i=0}^nf(x_i)\cdot\ell_i(x) $$
+\end{itemize}
+\textbf{Interpolación de Newton}
+\begin{itemize}
+    \item Polinomio de interpolación de Newton (\ref{ec:newton})
+    $$p_n(x)=\sum_{i=0}^nf[x_o,\ldots,x_i]\cdot (x-x_o)\cdots(x-x_{i-1})$$
+    \item Diferencias divididas (\ref{dif:div})
+    $$f[x_o,x_1]=\frac{f(x_1)-f(x_o)}{x_1-x_o}$$
+    $$f[x_o,\ldots,x_n]=\frac{f[x_1,\ldots,x_n]-f[x_o,\ldots,x_{n-1}]}{x_n-x_o} $$
+\end{itemize}
+\textbf{Error de interpolación} (\ref{error:int})
+    $$f[x_0,\dots,x_n] = \dfrac{f^{(n)}(\xi)}{n!}$$  $$\mathcal{E}_n(x)=f(x)-p_n(x)=\frac{f^{(n+1)}(\xi)}{(n+1)!}(x-x_o)\cdots(x-x_n) = \frac{f^{(n+1)}(\xi)}{(n+1)!}\cdot \Omega(x)$$
+\textbf{Nodos de Chebyshev}
+\begin{itemize}
+    \item Polinomios de Chebyshev (\ref{pol:cheb})
+    $$T_{n+1}(x)=2x\cdot T_{n}(x)-T_{n-1}(x)$$
+    \item Nodos de Chebyshev (\ref{nodos:cheb})
+    $$x_k=\cos\left(\dfrac{\pi}{2n}(2k+1)\right)\qquad k\in\mathbb{Z}$$
+\end{itemize}
+\textbf{Fórmulas de Newton-Gregory}
+\begin{equation*}
+    \begin{aligned}
+        & \Delta^n f(x_o)=\nabla ^n f(x_n)=\sum_{k=0}^n \binom{n}{k} (-1)^k f(x_{n-k})\\[3mm]
+        & f[x_o,\ldots,x_n]=\frac{\Delta^n f(x_o)}{n! h^n}=\frac{\nabla^n f(x_n)}{n! h^n} \quad \text{\textcolor{red}{(nodos equiespaciados)}}\,\textcolor{red}{\downarrow}
+    \end{aligned}
+\end{equation*}
+\begin{itemize}
+    \item Fórmula de Newton-Gregory progresiva (\ref{newton-gregoryprog})
+    $$p_n(x)=\sum_{i=0}^n \binom{s}{i}\Delta^if(x_o)\qquad s=\dfrac{x-x_o}{h}$$
+    \item Fórmula de Newton-Gregory regresiva (\ref{newton-gregoryreg})
+    $$p_n(x)=\sum_{i=0}^n \binom{u+i-1}{i}\nabla^if(x_n)\qquad u=\dfrac{x-x_n}{h}$$
+    \end{itemize}
+\textbf{Interpolación de Hermite}
+\begin{itemize}
+    \item Polinomios de interpolación de Hermite (\ref{pol:herm})
+    $$h_i^{\alpha_i}=\frac{1}{\alpha_i!}(x-x_i)^{\alpha_i}\prod_{j\neq i}\left(\frac{x-x_j}{x_i-x_j}\right)^{\alpha_j+1}$$
+        $$h_i^{\alpha_i-j}=\tilde{h}_i^{\alpha_i-j}-\sum_{k=1}^jc_{i,\alpha_i-j,\alpha_i-j+k}\cdot h_i^{\alpha_i-j+k}$$
+        $$\tilde{h}_i^{\alpha_i-j}=\frac{1}{(\alpha_i-j)!}(x-x_i)^{\alpha_i-j}\prod_{k\neq i}\left(\frac{x-x_k}{x_i-x_k}\right)^{\alpha_k+1}$$
+        $$c_{i,\alpha_i-j,\alpha_i-j+k}=(\tilde{h}_i^{\alpha_i-j})^{(\alpha_i-j+k)}(x_i)$$
+    \item Fórmula de Newton para el polinomio de interpolación de Hermite (\ref{hermite:newton})
+$$p_n(x)=p_{n-1}(x)+c_n\cdot (x-x_o)^{\alpha_o+1}\cdots (x-x_{s-1})^{\alpha_{s-1}+1}(x-x_s)^{\alpha_s}$$
+$$c_n=f[x_o,\overset{(\alpha_o+1)}{\ldots},x_o,x_1,\overset{(\alpha_1+1)}{\ldots},x_1,\ldots,x_s,\overset{(\alpha_s+1)}{\ldots},x_s]$$
+    \item Diferencias divididas generalizadas (\ref{difdiv:gen})
+    $$f[x_o,x_1]=\left\{\begin{array}{cc}
+       \dfrac{f(x_1)-f(x_o)}{x_1-x_o}  &\text{si }x_1\neq x_o  \\
+       \vspace{-5mm} & \\
+         f'(x_o) & \text{si }x_1= x_o
+    \end{array}\right.$$
+    $$f[x_o,\ldots,x_n]=\left\{\begin{array}{cc}
+       \dfrac{f[x_1,\ldots,x_n]-f[x_o,\ldots,x_{n-1}]}{x_n-x_o}  &\text{si }x_n\neq x_o  \\
+       & \\
+         \dfrac{f^{(n)}(x_o)}{n!} & \text{si }x_n= x_o
+    \end{array}\right.$$
+    \item Error de la interpolación de Hermite (\ref{error:herm})
+    $$\mathcal{E}_n(x)=\dfrac{f^{(n+1)}(\xi)}{(n+1)!}\cdot \prod_{i=0}^s(x-x_i)^{\alpha_i+1}$$
+\end{itemize}
+\section*{Derivación numérica}
+\vspace{-5mm}\textbf{\textcolor{red}{(Nodos equidistantes)}}\\
+\noindent \textbf{Error de la derivada}
+$$\mathcal{E}'_n(x_k) = \dfrac{f^{(n+1)}(\xi)}{n+1} \cdot \dfrac{(-1)^{n-k}\cdot h^n}{\binom{n}{k}}$$
+\noindent \textbf{Polinomio de interpolación de la derivada}
+\begin{itemize}
+    \item Fórmula progresiva (\ref{derivada:prog})
+    $$p_n'(x_o)=\sum_{k=1}^n\dfrac{(-1)^{k-1}\Delta^k f(x_o)}{h\cdot k}$$
+    \item Fórmula regresiva (\ref{derivada:reg})
+    $$p_n'(x_n)=\sum_{k=1}^n\dfrac{\nabla^k f(x_n)}{h\cdot k}$$
+    \item Fórmula general (\ref{derivada:cent})
+    $$p_n'(x_j)=\sum_{k=1}^n\dfrac{\Delta^k f(x_o)}{h\cdot k!}\cdot \left(\dfrac{d}{ds}((s(s-1)\cdots(s-i+1))\right)_{s=j}$$
+\end{itemize}
+\noindent \textbf{Fórmulas de dos puntos}
+\begin{itemize}
+    \item Fórmula progresiva (\ref{prog:2})
+    $$f'(x_o)\approx \dfrac{f(x_o+h)-f(x_o)}{h}\qquad \mathcal{E}'_1(x_o)=-\dfrac{f''(\xi)}{2}\cdot h$$
+    \item Fórmula regresiva (\ref{reg:2})
+    $$f'(x_1)\approx \dfrac{f(x_1)-f(x_1-h)}{h}\qquad \mathcal{E}'_1(x_1)=-\dfrac{f''(\xi)}{2}\cdot h$$   
+\end{itemize}
+\textbf{Fórmulas de tres puntos}
+\begin{itemize}
+    \item Fórmula progresiva (\ref{prog:3})
+$$f'(x_o)\approx\frac{-3f(x_o)+4f(x_o+h)-f(x_o+2h)}{2h}\qquad\mathcal{E}_2'(x_o)=\dfrac{f^{(3)}(\xi)}{3}\cdot h^2$$
+    \item Fórmula regresiva (\ref{reg:3})
+ $$f'(x_2)\approx \frac{3f(x_2)-4f(x_2-h)+f(x_2-2h)}{2h}\qquad \mathcal{E}_2'(x_2)=\dfrac{f^{(3)}(\xi)}{3}\cdot h^2$$
+    \item Fórmula centrada (\ref{cent:3})
+  $$f'(x_1)\approx \dfrac{f(x_1+h)-f(x_1-h)}{2h}\qquad \mathcal{E}_2'(x_1)=-\dfrac{f^{(3)}(\xi)}{6}\cdot h^2$$ 
+\end{itemize}
+\textbf{Fórmulas de cinco puntos}
+\begin{itemize}
+    \item Fórmula progresiva (\ref{prog:5})
+$$f'(x_o)\approx \dfrac{-25f(x_o)+48f(x_o+h)-36f(x_o+2h)+16f(x_o+3h)-3f(x_o+4h)}{12h}$$
+$$\mathcal{E}'_4(x_o)=\dfrac{f^{(5)}(\xi)}{30}\cdot h^4$$
+    \item Fórmula regresiva (\ref{reg:5})
+ $$f'(x_4)\approx \dfrac{3f(x_4-4h)-16f(x_4-3h)+36f(x_4-2h)-48f(x_4-h)+25f(x_4)}{12h}$$
+ $$ \mathcal{E}'_4(x_4)=\dfrac{f^{(5)}(\xi)}{30}\cdot h^4$$
+    \item Fórmula centrada (\ref{cent:5})
+  $$f'(x_2)\approx\dfrac{f(x_2-2h)-8f(x_2-h)+8f(x_2+h)-f(x_2+2h)}{12h}$$ 
+  $$\mathcal{E}'_4(x_2)=\dfrac{f^{(5)}(\xi)}{120}\cdot h^4$$ 
+\end{itemize}
+\textbf{Núcleos de Peano}
+\begin{itemize}
+    \item Núcleo de Peano
+    $$K_n(t)\mathcal{L}((x-t)_+^n)$$
+    $$(x-t)_+^n=\left\{\begin{array}{cc}
+             (x-t)^n & a\leq t\leq x  \\
+             0 & x<t<b 
+        \end{array}\right.$$
+    \item Error de una fórmula numérica (\ref{peano})
+    $$\mathcal{L}(f)=\dfrac{f^{(n+1)}}{n!}\cdot \int_a^bK_n(t)dy$$
+\end{itemize}
+\textbf{Extrapolación de Richardson} (\ref{richardson})
+    $$N_j(h)=\dfrac{2^{kj}\cdot N_{j-1}\left(\dfrac{h}{2}\right)-N_{j-1}(h)}{2^{kj}-1}$$
+\section*{Integración numérica}
+\noindent\textbf{Fórmulas de integración interpolatorias}
+\begin{itemize}
+    \item Fórmula del punto medio (\ref{punto:medio})
+    $$\int_a^bf(x)dx\approx(b-a)\cdot f\left(\dfrac{a+b}{2}\right)\qquad \mathcal{E}_o=\dfrac{f''(\xi)}{24}(b-a)^3$$
+    \item Fórmula del trapecio (\ref{trapecio})
+    $$\int_a^bf(x)dx\approx\dfrac{b-a}{2}(f(a)+f(b))\qquad \mathcal{E}_1=-\dfrac{f''(\xi)}{12}(b-a)^3$$
+    \item Fórmula de Simpson (\ref{simpson})
+    $$ \int_a^{b}f(x)dx\approx \dfrac{b-a}{6}(f(a)+4f\left(\dfrac{a+b}{2}\right)+f(b))\qquad \mathcal{E}_2=-\dfrac{f^{(4)}(\xi)}{90}\cdot \left(\dfrac{b-a}{2}\right)^5$$
+\end{itemize}
+\textbf{Fórmulas compuestas}
+\begin{itemize}
+    \item Trapecio compuesto (\ref{trp:comp})
+    $$\int_a^bf(x)dx\approx\dfrac{b-a}{2n}\left(f(a)+2\sum_{i=1}^{n-1}f(x_i)+f(b)\right)\qquad \mathcal{E}_{TC}=-\dfrac{f''(\xi)}{12}\cdot \dfrac{(b-a)^3}{n^2}$$
+    $$h_n=\dfrac{b-a}{n}$$
+    \item Simpson compuesto (\ref{simp:comp})
+    $$\int_a^bf(x)dx\approx\dfrac{b-a}{6n}\left(f(a)+2\sum_{i=1}^{n-1}f(x_i)+4\sum_{i=0}^{n-1}f\left(\dfrac{x_i+x_{i-1}}{2}\right)+f(b)\right)\quad \mathcal{E}_{SC}=-\dfrac{f^{(4)}(\xi)}{90}\cdot\left(\dfrac{b-a}{2}\right)^5\cdot \dfrac{1}{n^4}$$
+    $$h_n=\dfrac{b-a}{n}$$
+\end{itemize}
+\textbf{Cuadraturas adaptativas}
+\begin{itemize}
+    \item Trapecio adaptativo (\ref{trap:adap})
+$$\int_a^bf(x)dx\approx T_1+T_2-\dfrac{1}{3}(T-(T_1+T_2))$$
+    \item Simpson adaptativo (\ref{simp:adap})
+    $$\int_a^bf(x)dx\approx S_1+S_2-\dfrac{1}{15}(S-(S_1+S_2))$$
+\end{itemize}
+\textbf{Cuadraturas gaussianas}
+\begin{itemize}
+    \item Polinomios ortogonales (\ref{pol:gauss})
+    $$p_{n+1}=\left(x-\alpha_{n+1}\right)\cdot p_n- \gamma_{n+1}^2\cdot p_{n-1}$$
+    $$\alpha_{n+1}=\dfrac{g_{\omega}(p_n,xp_n)}{g_{\omega}(p_{n},p_{n})}\qquad \gamma_{n+1}^2=\dfrac{g_{\omega}(p_n,p_n)}{g_{\omega}(p_{n-1},p_{n-1})}$$
+    \item Pesos de la cuadratura (\ref{pesos:gauss})
+    $$\omega_i=\dfrac{g_{\omega}(p_{n-1},p_{n-1})}{p_{n-1}(x_i)p'_n(x_i)} $$
+    \item Cuadratura de Gauss-Legendre de dos puntos (\ref{legendre:2})
+    $$\int_{-1}^1f(x)dx\approx f\left(\dfrac{1}{\sqrt{3}}\right)+f\left(-\dfrac{1}{\sqrt{3}}\right)$$
+    \item Cuadratura de Gauss-Legendre de tres puntos (\ref{legendre:3})
+    $$\int_{-1}^1f(x)dx\approx\dfrac{5}{9}\cdot f\left(\sqrt{\dfrac{3}{5}}\right)+ \dfrac{8}{9}\cdot f(0)+\dfrac{5}{9}\cdot f\left(\sqrt{\dfrac{3}{5}}\right) $$
+    \item Cuadratura de Gauss-Chebyshev (\ref{gauss:cheb})
+    $$ \int_{-1}^1\dfrac{f(x)}{\sqrt{1-x^2}}dx\approx\dfrac{\pi}{n}\sum_{i=1}^nf(x_i)$$
+    \item Error de las cuadraturas gaussianas (\ref{error:gauss})
+    $$\mathcal{E}_G=\dfrac{f^{(2n)}(\xi)}{(2n)!}g_{\omega}(p_n,p_n)$$
+    
+\end{itemize}
